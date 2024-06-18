@@ -2,7 +2,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
 
+local Janitor = require(ReplicatedStorage.Source.Modules.Utility.Janitor)
+
 local CMTF = require(script.Parent.CommonToolFunctions)
+local MeleeModule = require(script.Parent.MeleeModule)
 
 local MeleeToolModule = {}
 
@@ -11,6 +14,7 @@ function MeleeToolModule.Load(Tool : Tool)
 	
 	local Character
 	local Humanoid : Humanoid
+	local Animator : Animator
 	local RootPart : BasePart
 	local Player
 	
@@ -18,17 +22,23 @@ function MeleeToolModule.Load(Tool : Tool)
 	
 	local Equipped = false
 	
-	local AnimationsLoaded = false
+	local Animations
 	
 	local Equipping = false
 	
 	local LastStrike = os.clock()
+
+	local NewJanitor = Janitor.new()
+	NewJanitor:LinkToInstances(Character, Tool)
 	
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
 		Humanoid = Character:WaitForChild("Humanoid")
-		RootPart = Character:WaitForChild("HumanoidRootPart")
+		Animator = Humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", Humanoid)
+ 		RootPart = Character:WaitForChild("HumanoidRootPart")
 		Player = Players:GetPlayerFromCharacter(Character)
+
+		Animations = MeleeModule:LoadAnimations(Animator, Tool.Animations)
 				
 		local PotentialGripR = Character["Right Arm"]:FindFirstChild("RightGripAttachment")
 		local PotentialGripL = Character["Left Arm"]:FindFirstChild("LeftGripAttachment")
@@ -58,7 +68,6 @@ function MeleeToolModule.Load(Tool : Tool)
 		
 		local Appearance
 		
-		
 		for _, Object in ReplicatedStorage.Assets.Models.Weapons:GetDescendants() do
 			if not Object:IsA("Model") then
 				continue
@@ -71,11 +80,40 @@ function MeleeToolModule.Load(Tool : Tool)
 		
 		Weapon_Model = CMTF.LoadModelSkin(Player, Appearance, Tool)
 		
+		NewJanitor:Add(Animations.Equip:GetMarkerReachedSignal("Switch_Handle"):Connect(function(...)
+			for _, Object in Weapon_Model:GetDescendants() do
+				if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
+					continue
+				end
+
+				if Object:IsA("BasePart") and Object.Name == "Sheath_Handle" then
+					Object.Weld.Part1 = nil
+				end
+ 
+				if Object.Name == "Weapon_Handle" and Object:IsA("Motor6D") then
+					Object.Part0 = Character[tostring(...)]
+				end
+ 			end
+		end), "Disconnect")
+
+		Animations.Equip:Play()
+		Animations.SheathIdle:Play()
+
+		task.delay(0.2, function()
+			Animations.Idle:Play()
+		end)
+		
 		Equipped = true
 	end)
 	
 	Tool.Unequipped:Connect(function()
 		Equipped = false
+
+		if Animations.Idle.IsPlaying == true then
+			Animations.Idle:Stop()
+		end
+
+		NewJanitor:Cleanup()
 	end)
 end
 
