@@ -2,6 +2,15 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
+local Attributes = {
+    ["Character"] = {},
+    ["Player"] = {},
+    ["Humanoid"] = {
+        ["Stamina"] = 100,
+        ["MaxStamina"] = 100,
+    },
+}
+
 local JanitorStorage = {}
 
 local Janitor = require(ReplicatedStorage.Source.Modules.Utility.Janitor)
@@ -16,8 +25,18 @@ local function HandleCharacterSpawn(Player : Player)
         until Character:IsDescendantOf(workspace)
     end
 
+    local Humanoid = Character:WaitForChild("Humanoid")
+
     Character.Parent = workspace.Users
     Character.PrimaryPart = Character:FindFirstChild("HumanoidRootPart")
+
+    for AttributeName, AttributeValue in Attributes.Character do
+        Character:SetAttribute(AttributeName, AttributeValue)
+    end
+
+    for AttributeName, AttributeValue in Attributes.Humanoid do
+        Humanoid:SetAttribute(AttributeName, AttributeValue)
+    end
 
     for _, Item : BasePart in Character:GetDescendants() do
         if not Item:IsA("BasePart") then
@@ -39,6 +58,10 @@ local function HandlePlayerAdded(Player : Player)
 
     -- Flush out old or outdated values and add new ones if required
     task.defer(function()
+        for AttributeName, AttributeValue in Attributes.Player do
+            Player:SetAttribute(AttributeName, AttributeValue)
+        end
+
         for Index, Value in ProfileHandler.DefaultData do
 			if not PlayerProfile.Data[Index] then
 				PlayerProfile.Data[Index] = Value

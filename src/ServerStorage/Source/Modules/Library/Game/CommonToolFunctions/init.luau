@@ -60,7 +60,7 @@ function CommonToolFunctions.LoadModelSkin(Player : Player, Model : Model, Tool 
 	assert(Player and typeof(Player) == "Instance" and Player:IsA("Player"), "Unexpected argument #1, expected Instance<Player>, got " .. typeof(Player))
 	assert(Tool and typeof(Tool) == "Instance" and Tool:IsA("Tool"), "Unexpected argument #3, expected Instance<Tool>, got " .. typeof(Tool))
 	
-	local Character, Humanoid, RootPart = CommonToolFunctions.GetCharacterInstances(Player	)
+	local Character, Humanoid, RootPart = CommonToolFunctions.GetCharacterInstances(Player)
 	
 	if not Character or not Humanoid or not RootPart then
 		return
