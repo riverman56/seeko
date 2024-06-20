@@ -165,4 +165,28 @@ function CommonFunctions.SpawnParticle(Origin : Instance, Name : string, NewPare
 	end)
 end
 
+function CommonFunctions.CheckStatus(Humanoid : Humanoid, HitHumanoid : Humanoid, Damage : number, Settings : any)
+	local Character = Humanoid:FindFirstAncestorOfClass("Model")
+	local HitCharacter = HitHumanoid:FindFirstAncestorOfClass("Model")
+
+	local RootPart = Humanoid.RootPart
+	local HitRootPart = HitHumanoid.RootPart
+
+	local Tool = Character:FindFirstChildOfClass("Tool")
+	local HitCharacterTool = HitCharacter:FindFirstChildOfClass("Tool")
+	
+	if HitHumanoid:GetAttribute("Guard") == true then
+		local Direction = (HitRootPart.Position - RootPart.Position).Unit
+		local Result = Direction:Dot(HitRootPart.CFrame.LookVector.Unit)
+
+		if Result > -0.15  then
+			return "Damaged"
+		end
+
+		return "Blocked"
+	end
+
+	return "Damaged"
+end
+
 return CommonFunctions

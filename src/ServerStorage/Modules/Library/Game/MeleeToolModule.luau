@@ -200,13 +200,15 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost") then
+			if Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost") or Humanoid:GetAttribute("Guard") == true then
 				return
 			end
 
 			if os.clock() - LastStrike < 0.25 then
 				return
 			end
+
+			Humanoid:GetAttribute("Guard", false)
 
 			LastStrike = os.clock()
 
@@ -217,80 +219,120 @@ function MeleeToolModule.Load(Tool: Tool)
 
 			NewHitbox.OnHit:Connect(
 				function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
-					HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
+					local function Damage()
+						HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
 
-					ReplicatedStorage.Remotes.Effects:FireAllClients(
-						"Game",
-						"DamageIndicator",
-						HitCharacter.Head,
-						Tool:GetAttribute("Damage") or 20
-					)
-					ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
+						ReplicatedStorage.Remotes.Effects:FireAllClients(
+							"Game",
+							"DamageIndicator",
+							HitCharacter.Head,
+							Tool:GetAttribute("Damage") or 20
+						)
+						ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
 
-					local BV = Instance.new("BodyVelocity")
-					BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
-					BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
-					BV.Parent = HitRootPart
-					Debris:AddItem(BV, 0.1)
+						local BV = Instance.new("BodyVelocity")
+						BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
+						BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
+						BV.Parent = HitRootPart
+						Debris:AddItem(BV, 0.1)
 
-					if Tool:GetAttribute("CanDismember") == true then
-						CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
+						if Tool:GetAttribute("CanDismember") == true then
+							CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
+						end
+
+						task.delay(0.1, function()
+							CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
+						end)
+
+						if HitHumanoid:GetState() == Enum.HumanoidStateType.Dead or HitHumanoid.Health <= 0 then
+							if Tool:GetAttribute("CanDismember") ~= true then
+								return
+							end
+
+							local Constraints = {}
+
+							for _, Object in HitCharacter:GetDescendants() do
+								if not Object:IsA("BallSocketConstraint") then
+									continue
+								end
+
+								if Object.Name == "LimbConstraint" then
+									table.insert(Constraints, Object)
+								end
+							end
+
+							if Constraints ~= nil and #Constraints >= 0 then
+								local Limb = Constraints[math.random(#Constraints)]
+								local LimbPart = Limb.Attachment1.Parent
+
+								local LimbBV = Instance.new("BodyVelocity")
+								LimbBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+								LimbBV.Velocity = Vector3.new(math.random(-20, 20), 20, math.random(-20, 20))
+
+								local LimbAV = Instance.new("BodyAngularVelocity")
+								LimbAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+								LimbAV.AngularVelocity =
+									Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
+
+								LimbAV.Parent = LimbPart
+								LimbBV.Parent = LimbPart
+
+								Debris:AddItem(LimbAV, 0.1)
+								Debris:AddItem(LimbBV, 0.1)
+
+								Limb:Destroy()
+								CommonFunctions.PlayRandomSound(
+									ReplicatedStorage.Assets.Library.Sounds,
+									"Dismember",
+									LimbPart
+								)
+
+								local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
+								BloodEffect.Parent = LimbPart
+								BloodEffect.Enabled = true
+
+								task.delay(1, function()
+									BloodEffect.Enabled = false
+								end)
+							end
+						end
 					end
 
-					task.delay(0.1, function()
-						CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
-					end)
+					local Status = CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
 
-					if HitHumanoid:GetState() == Enum.HumanoidStateType.Dead or HitHumanoid.Health <= 0 then
-						if Tool:GetAttribute("CanDismember") ~= true then
-							return
-						end
+					if Status == "Damaged" then
+						Damage()
+					elseif Status == "Blocked" then
+						local HitTool = HitCharacter:FindFirstChildOfClass("Tool")
 
-						local Constraints = {}
+						if HitTool then
+							if HitTool:GetAttribute("InHand") == true then
+								local ReturnAnimations = {}
 
-						for _, Object in HitCharacter:GetDescendants() do
-							if not Object:IsA("BallSocketConstraint") then
-								continue
+								for _, Animation: Instance in HitTool:WaitForChild("Animations"):GetChildren() do
+									if string.find(Animation.Name, "Evade") then
+										table.insert(ReturnAnimations, Animation)
+									end
+								end
+
+								local AnimationObject = ReturnAnimations[math.random(#ReturnAnimations)]
+
+								local HitAnimator = HitHumanoid:FindFirstChildOfClass("Animator")
+									or Instance.new("Animator", HitHumanoid)
+
+								if AnimationObject and AnimationObject.AnimationId ~= "" then
+									local EvadeAnimation = HitAnimator:LoadAnimation(AnimationObject)
+									EvadeAnimation:Play()
+								end
+
+								task.delay(0.1, function()
+									CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
+								end)
+							else
+								Damage()
 							end
-
-							if Object.Name == "LimbConstraint" then
-								table.insert(Constraints, Object)
-							end
-						end
-
-						if Constraints ~= nil and #Constraints >= 0 then
-							local Limb = Constraints[math.random(#Constraints)]
-							local LimbPart = Limb.Attachment1.Parent
-
-							local LimbBV = Instance.new("BodyVelocity")
-							LimbBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-							LimbBV.Velocity = Vector3.new(math.random(-20, 20), 20, math.random(-20, 20))
-
-							local LimbAV = Instance.new("BodyAngularVelocity")
-							LimbAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-							LimbAV.AngularVelocity =
-								Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
-
-							LimbAV.Parent = LimbPart
-							LimbBV.Parent = LimbPart
-
-							Debris:AddItem(LimbAV, 0.1)
-							Debris:AddItem(LimbBV, 0.1)
-
-							Limb:Destroy()
-							CommonFunctions.PlayRandomSound(
-								ReplicatedStorage.Assets.Library.Sounds,
-								"Dismember",
-								LimbPart
-							)
-
-							local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
-							BloodEffect.Parent = LimbPart
-							BloodEffect.Enabled = true
-
-							task.delay(1, function()
-								BloodEffect.Enabled = false
-							end)
+						else
+							Damage()
 						end
 					end
 				end

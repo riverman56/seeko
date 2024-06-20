@@ -24,6 +24,7 @@ function MeleeToolModule.Load(Tool: Tool)
 	local StrikeOrder = 1
 
 	local Equipped = false
+	local Guarding = false
 	local AttackDebounce = false
 
 	local Loaded = false
@@ -88,6 +89,12 @@ function MeleeToolModule.Load(Tool: Tool)
 			Animations = MeleeModule:LoadAnimations(Animator, Tool.Animations)
 		end
 
+		Guarding = false
+
+		if Animations.Guard and Animations.Guard.IsPlaying == true then
+			Animations.Guard:Stop()
+		end
+
 		if Animations.SheathIdle.IsPlaying == false then
 			Animations.SheathIdle:Play()
 		end
@@ -102,12 +109,18 @@ function MeleeToolModule.Load(Tool: Tool)
 	Tool.Unequipped:Connect(function()
 		Equipped = false
 
+		Guarding = false
+
 		if
 			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible == true
 			and UserInputService.MouseIconEnabled == false
 		then
 			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible = false
 			UserInputService.MouseIconEnabled = true
+		end
+
+		if Animations.Guard and Animations.Guard.IsPlaying == true then
+			Animations.Guard:Stop()
 		end
 
 		task.delay(0.2, function()
@@ -144,6 +157,8 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Humanoid:GetAttribute("Stamina") >= Tool:GetAttribute("StaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and AttackDebounce == false
+				and Humanoid:GetAttribute("Guard") == false
+				and Guarding == false
 			then
 				if os.clock() - LastStrike >= 1 then
 					StrikeOrder = 1
@@ -221,6 +236,8 @@ function MeleeToolModule.Load(Tool: Tool)
 
 				Animations.Guard:Play()
 				Tool.Remotes.Guard:FireServer(true)
+
+				Guarding = true
 			end
 		end),
 		"Disconnect"
@@ -232,10 +249,15 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
+			if not Player or not Humanoid or not Character or not RootPart then
+				return
+			end
+
 			if Input.UserInputType == Enum.UserInputType.MouseButton2 then
-				if Animations.Guard.IsPlaying == true then
+				if Animations.Guard and Animations.Guard.IsPlaying == true then
 					Animations.Guard:Stop()
 					Tool.Remotes.Guard:FireServer(false)
+					Guarding = false
 				end
 			end
 		end),
