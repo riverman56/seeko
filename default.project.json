@@ -17,14 +17,14 @@
     },
 
     "ReplicatedStorage": {
-      "Source": {
-        "$path": "src/ReplicatedStorage/Source"
+      "Modules": {
+        "$path": "src/ReplicatedStorage/Modules"
       }
     },
     
     "ServerStorage": {
-      "Source": {
-        "$path": "src/ServerStorage/Source"
+      "Modules": {
+        "$path": "src/ServerStorage/Modules"
       }
     }
   }

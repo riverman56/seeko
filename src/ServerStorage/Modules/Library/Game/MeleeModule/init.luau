@@ -31,4 +31,14 @@ function MeleeModule:LoadAnimations(Animator : Animator, AnimationFolder : Folde
     return Animations
 end
 
+function MeleeModule.CheckEquip(Character : Model, Tool : Tool)
+    local Value = Tool:GetAttribute("InHand")
+
+    if Value == true then
+        return true
+    else
+        return false
+    end
+end
+
 return MeleeModule

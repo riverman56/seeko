@@ -83,4 +83,66 @@ function CommonFunctions.PlaySound(Origin : (BasePart | Vector3), Sound : Sound,
 	return Clone
 end
 
+function CommonFunctions.PlayRandomSound(Origin : Instance, SoundName : string, Parent : Instance)
+	local Sounds = {}
+
+	for _, Object in Origin:GetDescendants() do
+		if not Object:IsA("Sound") then
+			continue
+		end
+
+		if string.find(Object.Name, SoundName) then
+			table.insert(Sounds, Object)
+		end
+	end
+
+	if Parent and typeof(Origin) == "Instance" then
+		local ChosenSound = Sounds[math.random(#Sounds)]:Clone()
+		ChosenSound.Parent = Parent
+		ChosenSound:Play()
+
+		Debris:AddItem(ChosenSound, ChosenSound.TimeLength / ChosenSound.PlaybackSpeed)
+	elseif typeof(Parent) == "Vector3" then
+		local ChosenSound = Sounds[math.random(#Sounds)]:Clone()
+		
+		local SoundPart = Instance.new("Part")
+		SoundPart.Anchored = true
+		SoundPart.CanCollide = false
+		SoundPart.CanTouch = false
+		SoundPart.CanQuery = false
+		SoundPart.Size = Vector3.zero
+		SoundPart.Transparency = 1
+		SoundPart.Position = Parent
+		SoundPart.Parent = workspace.Visuals 
+
+		ChosenSound.Parent = SoundPart
+		ChosenSound:Play()
+
+		Debris:AddItem(ChosenSound, ChosenSound.TimeLength / ChosenSound.PlaybackSpeed)
+		Debris:AddItem(SoundPart, ChosenSound.TimeLength / ChosenSound.PlaybackSpeed)
+	end
+end
+
+function CommonFunctions.SpawnParticle(Origin : Instance, Name : string, NewParent : Instance)
+	task.spawn(function()
+		for _, Particle in Origin:GetDescendants() do
+			if not Particle:IsA("ParticleEmitter") then
+				continue
+			end
+
+			if string.find(Particle.Name, Name) then
+				local NewParticle = Particle:Clone()
+				NewParticle.Name = "TemporaryParticle"
+				NewParticle.Parent = NewParent
+				NewParticle.Enabled = true
+
+				task.delay(0.1, function()
+					NewParticle.Enabled = false
+					Debris:AddItem(NewParticle, 10)
+				end)
+			end
+		end
+	end)
+end
+
 return CommonFunctions

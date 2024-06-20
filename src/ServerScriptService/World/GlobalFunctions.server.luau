@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
-local CommonFunctions = require(ReplicatedStorage.Source.Modules.Utility.CommonFunctions)
+local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
 
 local LoadFolder = ServerStorage:WaitForChild("Load")
 

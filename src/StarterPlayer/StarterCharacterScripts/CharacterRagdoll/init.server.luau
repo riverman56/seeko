@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local CommonFunctions = require(ReplicatedStorage.Source.Modules.Utility.CommonFunctions)
+local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
 
 local Character = script:FindFirstAncestorOfClass("Model")
 local Humanoid: Humanoid = Character:WaitForChild("Humanoid")

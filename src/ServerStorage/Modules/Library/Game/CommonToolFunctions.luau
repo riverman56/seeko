@@ -1,3 +1,4 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CommonToolFunctions = {}
 
 function CommonToolFunctions.CreateM6D(Part0 : BasePart, Part1 : BasePart)
@@ -91,11 +92,11 @@ function CommonToolFunctions.LoadModelSkin(Player : Player, Model : Model, Tool 
 	end
 	
 	if MainHandle:GetAttribute("LoadDefaultEffects") == true then
-		for _, Object in script.DefaultPreset.Particles:GetChildren() do
+		for _, Object in ReplicatedStorage.Assets.Effects.DefaultPreset.Particles:GetChildren() do
 			Object:Clone().Parent = MainHandle.Particles
 		end
 		
-		for _, Object in script.DefaultPreset.Trails:GetChildren() do
+		for _, Object in ReplicatedStorage.Assets.Effects.DefaultPreset.Trails:GetChildren() do
 			local Trail = Object:Clone()
 			Trail.Attachment0 = MainHandle.Shaft
 			Trail.Attachment1 = MainHandle.Tip

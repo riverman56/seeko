@@ -13,9 +13,9 @@ local Attributes = {
 
 local JanitorStorage = {}
 
-local Janitor = require(ReplicatedStorage.Source.Modules.Utility.Janitor)
+local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
 
-local ProfileHandler = require(ServerStorage.Source.Modules.Data.ProfileHandler)
+local ProfileHandler = require(ServerStorage.Modules.Data.ProfileHandler)
 
 local function HandleCharacterSpawn(Player : Player)
     local Character = Player.Character or Player.CharacterAdded:Wait()
