@@ -12,6 +12,15 @@ local Hitbox = require(script.Parent.Parent.Packages.Hitbox)
 
 local MeleeToolModule = {}
 
+local EmissionFaces = {
+	"Back",
+	"Bottom",
+	"Front",
+	"Left",
+	"Right",
+	"Top",
+}
+
 function MeleeToolModule.Load(Tool: Tool)
 	assert(
 		Tool and typeof(Tool) == "Instance" and Tool:IsA("Tool"),
@@ -109,27 +118,30 @@ function MeleeToolModule.Load(Tool: Tool)
 		end
 
 		if MeleeModule.CheckEquip(Character, Tool) == false then
-			NewJanitor:Add(Animations.Equip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
-				CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Unsheathe"], 5)
-	
-				for _, Object in Weapon_Model:GetDescendants() do
-					if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
-						continue
+			NewJanitor:Add(
+				Animations.Equip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
+					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Unsheathe"], 5)
+
+					for _, Object in Weapon_Model:GetDescendants() do
+						if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
+							continue
+						end
+
+						if Object:IsA("BasePart") and Object.Name == "Sheath_Handle" then
+							Object.Weld.Part1 = nil
+						end
+
+						if Object.Name == "Weapon_Handle" and Object:IsA("Motor6D") then
+							Object.Part0 = Character[tostring(...)]
+						end
 					end
-	
-					if Object:IsA("BasePart") and Object.Name == "Sheath_Handle" then
-						Object.Weld.Part1 = nil
-					end
-	
-					if Object.Name == "Weapon_Handle" and Object:IsA("Motor6D") then
-						Object.Part0 = Character[tostring(...)]
-					end
-				end
-			end), "Disconnect")
-	
+				end),
+				"Disconnect"
+			)
+
 			Animations.Equip:Play()
 		end
-		
+
 		Tool:SetAttribute("InHand", true)
 
 		Equipped = true
@@ -139,28 +151,34 @@ function MeleeToolModule.Load(Tool: Tool)
 		Equipped = false
 
 		if MeleeModule.CheckEquip(Character, Tool) == true then
-			NewJanitor:Add(Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
-				CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Sheathe"], 5)
-	
-				for _, Object in Weapon_Model:GetDescendants() do
-					if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
-						continue
+			NewJanitor:Add(
+				Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
+					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Sheathe"], 5)
+
+					for _, Object in Weapon_Model:GetDescendants() do
+						if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
+							continue
+						end
+
+						if Object:IsA("Motor6D") and Object.Name == "Weapon_Handle" then
+							Object.Part0 = nil
+						end
+
+						if Object:IsA("BasePart") and Object.Name == "Sheath_Handle" then
+							Object.Weld.Part1 = MainHandle
+						end
 					end
-	
-					if Object:IsA("Motor6D") and Object.Name == "Weapon_Handle" then
-						Object.Part0 = nil
-					end
-	
-					if Object:IsA("BasePart") and Object.Name == "Sheath_Handle" then
-						Object.Weld.Part1 = MainHandle
-					end
-				end
-			end), "Disconnect")
-	
-			NewJanitor:Add(Animations.Unequip:GetMarkerReachedSignal("Swing"):Once(function(...)
-				CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Swing", MainHandle)
-			end), "Disconnect")
-	
+				end),
+				"Disconnect"
+			)
+
+			NewJanitor:Add(
+				Animations.Unequip:GetMarkerReachedSignal("Swing"):Once(function(...)
+					CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Swing", MainHandle)
+				end),
+				"Disconnect"
+			)
+
 			Animations.Unequip:Play()
 		end
 
@@ -196,29 +214,102 @@ function MeleeToolModule.Load(Tool: Tool)
 			NewHitbox.Size = Vector3.new(5, 5, 5)
 			NewHitbox.MultiHit = false
 			NewHitbox.Lifetime = 0.1
-			
-			NewHitbox.OnHit:Connect(function(HitCharacter : Model, HitHumanoid : Humanoid, HitRootPart : BasePart)
-				HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
 
-				ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageIndicator", HitCharacter.Head, Tool:GetAttribute("Damage") or 20)
-				ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
+			NewHitbox.OnHit:Connect(
+				function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
+					HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
 
-				local BV = Instance.new("BodyVelocity")
-				BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
-				BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback")
-				BV.Parent = HitRootPart
-				Debris:AddItem(BV, 0.1)
+					ReplicatedStorage.Remotes.Effects:FireAllClients(
+						"Game",
+						"DamageIndicator",
+						HitCharacter.Head,
+						Tool:GetAttribute("Damage") or 20
+					)
+					ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
 
-				if Tool:GetAttribute("CanDismember") == true then
-					CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", Character:FindFirstChild("BloodOrigin", true).Parent)
+					local BV = Instance.new("BodyVelocity")
+					BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
+					BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
+					BV.Parent = HitRootPart
+					Debris:AddItem(BV, 0.1)
+
+					if Tool:GetAttribute("CanDismember") == true then
+						CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
+					end
+
+					task.delay(0.1, function()
+						CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
+					end)
+
+					if HitHumanoid:GetState() == Enum.HumanoidStateType.Dead or HitHumanoid.Health <= 0 then
+						if Tool:GetAttribute("CanDismember") ~= true then
+							return
+						end
+
+						local Constraints = {}
+
+						for _, Object in HitCharacter:GetDescendants() do
+							if not Object:IsA("BallSocketConstraint") then
+								continue
+							end
+
+							if Object.Name == "LimbConstraint" then
+								table.insert(Constraints, Object)
+							end
+						end
+
+						if Constraints ~= nil and #Constraints >= 0 then
+							local Limb = Constraints[math.random(#Constraints)]
+							local LimbPart = Limb.Attachment1.Parent
+
+							local LimbBV = Instance.new("BodyVelocity")
+							LimbBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+							LimbBV.Velocity = Vector3.new(math.random(-20, 20), 20, math.random(-20, 20))
+
+							local LimbAV = Instance.new("BodyAngularVelocity")
+							LimbAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+							LimbAV.AngularVelocity =
+								Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
+
+							LimbAV.Parent = LimbPart
+							LimbBV.Parent = LimbPart
+
+							Debris:AddItem(LimbAV, 0.1)
+							Debris:AddItem(LimbBV, 0.1)
+
+							Limb:Destroy()
+							CommonFunctions.PlayRandomSound(ReplicatedStorage.Assets.Library.Sounds, "Dismember", LimbPart)
+
+							local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
+							BloodEffect.Parent = LimbPart
+							BloodEffect.Enabled = true
+
+							task.delay(1, function()
+								BloodEffect.Enabled = false
+							end)
+						end
+					end
 				end
-				
-				task.delay(0.1, function()
-					CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
-				end)
-			end)
+			)
 		end, "Disconnect")
 	)
+	
+	NewJanitor:Add(Tool.Remotes.Guard.OnServerEvent:Connect(function(ReceivedPlayer : Player, Value : boolean)
+		if not Player or not Character or not Humanoid or not RootPart or not Equipped then
+			return
+		end
+
+		if ReceivedPlayer ~= Player then
+			ReceivedPlayer:Kick("nice going idiot")
+			return
+		end
+
+		if Humanoid:GetState() == Enum.HumanoidStateType.Dead or Humanoid.PlatformStand == true then
+			return
+		end
+
+		Humanoid:SetAttribute("Guard", Value)
+	end))
 end
 
 return MeleeToolModule

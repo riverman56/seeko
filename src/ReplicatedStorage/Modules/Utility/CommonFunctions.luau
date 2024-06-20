@@ -2,6 +2,15 @@ local Debris = game:GetService("Debris")
 
 local CommonFunctions = {}
 
+local EmissionFaces = {
+	"Back",
+	"Bottom",
+	"Front",
+	"Left",
+	"Right",
+	"Top"
+}
+
 function CommonFunctions.GetRandom(Minimum : any, Maximum : any)
 	if typeof(Minimum) == "Vector3" and typeof(Maximum) == "Vector3" then
 		local X = CommonFunctions.GetRandom(Minimum.X, Maximum.X)
@@ -123,7 +132,9 @@ function CommonFunctions.PlayRandomSound(Origin : Instance, SoundName : string, 
 	end
 end
 
-function CommonFunctions.SpawnParticle(Origin : Instance, Name : string, NewParent : Instance)
+function CommonFunctions.SpawnParticle(Origin : Instance, Name : string, NewParent : Instance, RandomEmissionFace : boolean?)
+	RandomEmissionFace = RandomEmissionFace or false
+
 	task.spawn(function()
 		for _, Particle in Origin:GetDescendants() do
 			if not Particle:IsA("ParticleEmitter") then
@@ -134,6 +145,15 @@ function CommonFunctions.SpawnParticle(Origin : Instance, Name : string, NewPare
 				local NewParticle = Particle:Clone()
 				NewParticle.Name = "TemporaryParticle"
 				NewParticle.Parent = NewParent
+				
+				if RandomEmissionFace then
+					if NewParticle:GetAttribute("AdvancedParticle") ~= nil then
+						NewParticle.Emission:SetAttribute("EmissionFace", EmissionFaces[math.random(#EmissionFaces)])
+					else
+						NewParticle.EmissionFace = Enum.NormalId[EmissionFaces[math.random(#EmissionFaces)]]
+					end
+				end
+
 				NewParticle.Enabled = true
 
 				task.delay(0.1, function()

@@ -17,6 +17,7 @@ function MeleeToolModule.Load(Tool: Tool)
 	local Humanoid
 	local RootPart
 
+	local LastEquip = 0
 	local LastStrike = 0
 	local LastGuard = 0
 
@@ -29,46 +30,48 @@ function MeleeToolModule.Load(Tool: Tool)
 
 	local Animations
 
-    local function GetRandomAnimation(Name: string, DontRepeat: boolean?)
-        local ReturnAnimations = {}
-    
-        for _, LoadedAnimation in Animations do
-            if string.find(LoadedAnimation.Name, Name) then
-                table.insert(ReturnAnimations, LoadedAnimation)
-            end
-        end
-    
-        if #ReturnAnimations <= 0 then
-            if DontRepeat then
-                return nil
-            else
-                return GetRandomAnimation(Name)
-            end
-        else
-            return ReturnAnimations[math.random(#ReturnAnimations)]
-        end
-    end
-    
-    local function GetAnimationsWithName(Name: string)
-        local ReturnAnimations = {}
-    
-        for _, Animation in Animations do
-            if string.find(Animation.Name, Name) then
-                local AnimationIndex = tonumber(Animation.Name:match("%d+"))
-                ReturnAnimations[AnimationIndex] = Animation
-                -- table.insert(ReturnAnimations, Animation)
-            end
-        end
-    
-        return ReturnAnimations
-    end
+	local function GetRandomAnimation(Name: string, DontRepeat: boolean?)
+		local ReturnAnimations = {}
+
+		for _, LoadedAnimation in Animations do
+			if string.find(LoadedAnimation.Name, Name) then
+				table.insert(ReturnAnimations, LoadedAnimation)
+			end
+		end
+
+		if #ReturnAnimations <= 0 then
+			if DontRepeat then
+				return nil
+			else
+				return GetRandomAnimation(Name)
+			end
+		else
+			return ReturnAnimations[math.random(#ReturnAnimations)]
+		end
+	end
+
+	local function GetAnimationsWithName(Name: string)
+		local ReturnAnimations = {}
+
+		for _, Animation in Animations do
+			if string.find(Animation.Name, Name) then
+				local AnimationIndex = tonumber(Animation.Name:match("%d+"))
+				ReturnAnimations[AnimationIndex] = Animation
+				-- table.insert(ReturnAnimations, Animation)
+			end
+		end
+
+		return ReturnAnimations
+	end
 
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
 		Humanoid = Character:FindFirstChildOfClass("Humanoid")
 		RootPart = Humanoid.RootPart
 
-        NewJanitor:LinkToInstances(Character, Tool)
+		LastEquip = os.clock()
+
+		NewJanitor:LinkToInstances(Character, Tool)
 
 		if
 			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible == false
@@ -119,6 +122,10 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if not Player or not Humanoid or not Character or not RootPart then
+				return
+			end
+
+			if os.clock() - LastEquip < 1 then
 				return
 			end
 
@@ -206,13 +213,28 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Humanoid:GetAttribute("Guard") == false
 				and AttackDebounce == false
 			then
-				if os.clock() - LastGuard >= 0.5 then
+				if os.clock() - LastGuard < 0.5 then
 					return
 				end
 
 				LastGuard = os.clock()
 
-				print("guard")
+				Animations.Guard:Play()
+				Tool.Remotes.Guard:FireServer(true)
+			end
+		end),
+		"Disconnect"
+	)
+
+	NewJanitor:Add(
+		UserInputService.InputEnded:Connect(function(Input: InputObject, GPE: boolean)
+			if GPE then
+				return
+			end
+
+			if Animations.Guard.IsPlaying == true then
+				Animations.Guard:Stop()
+				Tool.Remotes.Guard:FireServer(false)
 			end
 		end),
 		"Disconnect"
