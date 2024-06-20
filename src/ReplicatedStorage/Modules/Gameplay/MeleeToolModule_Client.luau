@@ -159,6 +159,8 @@ function MeleeToolModule.Load(Tool: Tool)
 				and AttackDebounce == false
 				and Humanoid:GetAttribute("Guard") == false
 				and Guarding == false
+				and Humanoid:GetAttribute("Stun") ~= true
+				and Tool:GetAttribute("Stun") ~= true
 			then
 				if os.clock() - LastStrike >= 1 then
 					StrikeOrder = 1
@@ -227,6 +229,8 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and Humanoid:GetAttribute("Guard") == false
 				and AttackDebounce == false
+				and Humanoid:GetAttribute("Stun") ~= true
+				and Tool:GetAttribute("Stun") ~= true
 			then
 				if os.clock() - LastGuard < 0.5 then
 					return

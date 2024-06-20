@@ -8,7 +8,9 @@ local Attributes = {
     ["Humanoid"] = {
         ["Stamina"] = 100,
         ["MaxStamina"] = 100,
+        ["DefMaxStamina"] = 100,
         ["Guard"] = false,
+        ["Stun"] = false,
     },
 }
 

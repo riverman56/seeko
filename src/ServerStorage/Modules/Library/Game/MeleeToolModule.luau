@@ -58,6 +58,8 @@ function MeleeToolModule.Load(Tool: Tool)
 		RootPart = Character:WaitForChild("HumanoidRootPart")
 		Player = Players:GetPlayerFromCharacter(Character)
 
+		Humanoid:SetAttribute("Guard", false)
+
 		if AnimationsLoaded == false then
 			AnimationsLoaded = true
 			Animations = MeleeModule:LoadEquipAnimations(Animator, Tool.Animations)
@@ -150,6 +152,8 @@ function MeleeToolModule.Load(Tool: Tool)
 	Tool.Unequipped:Connect(function()
 		Equipped = false
 
+		Humanoid:SetAttribute("Guard", false)
+
 		if MeleeModule.CheckEquip(Character, Tool) == true then
 			NewJanitor:Add(
 				Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
@@ -200,7 +204,12 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost") or Humanoid:GetAttribute("Guard") == true then
+			if
+				Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost")
+				or Humanoid:GetAttribute("Guard") == true
+				or Humanoid:GetAttribute("Stun") == true
+				or Tool:GetAttribute("Stun") == true
+			then
 				return
 			end
 
@@ -350,7 +359,12 @@ function MeleeToolModule.Load(Tool: Tool)
 			return
 		end
 
-		if Humanoid:GetState() == Enum.HumanoidStateType.Dead or Humanoid.PlatformStand == true then
+		if
+			Humanoid:GetState() == Enum.HumanoidStateType.Dead
+			or Humanoid.PlatformStand == true
+			or Humanoid:GetAttribute("Stun") == true
+			or Tool:GetAttribute("Stun") == true
+		then
 			return
 		end
 
