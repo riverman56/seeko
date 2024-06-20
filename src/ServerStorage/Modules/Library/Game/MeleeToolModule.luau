@@ -278,7 +278,11 @@ function MeleeToolModule.Load(Tool: Tool)
 							Debris:AddItem(LimbBV, 0.1)
 
 							Limb:Destroy()
-							CommonFunctions.PlayRandomSound(ReplicatedStorage.Assets.Library.Sounds, "Dismember", LimbPart)
+							CommonFunctions.PlayRandomSound(
+								ReplicatedStorage.Assets.Library.Sounds,
+								"Dismember",
+								LimbPart
+							)
 
 							local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
 							BloodEffect.Parent = LimbPart
@@ -293,8 +297,8 @@ function MeleeToolModule.Load(Tool: Tool)
 			)
 		end, "Disconnect")
 	)
-	
-	NewJanitor:Add(Tool.Remotes.Guard.OnServerEvent:Connect(function(ReceivedPlayer : Player, Value : boolean)
+
+	NewJanitor:Add(Tool.Remotes.Guard.OnServerEvent:Connect(function(ReceivedPlayer: Player, Value: boolean)
 		if not Player or not Character or not Humanoid or not RootPart or not Equipped then
 			return
 		end

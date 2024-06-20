@@ -232,9 +232,11 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if Animations.Guard.IsPlaying == true then
-				Animations.Guard:Stop()
-				Tool.Remotes.Guard:FireServer(false)
+			if Input.UserInputType == Enum.UserInputType.MouseButton2 then
+				if Animations.Guard.IsPlaying == true then
+					Animations.Guard:Stop()
+					Tool.Remotes.Guard:FireServer(false)
+				end
 			end
 		end),
 		"Disconnect"
