@@ -320,6 +320,15 @@ function MeleeToolModule.Load(Tool: Tool)
 										EvadeAnimation:Play()
 									end
 
+									local SparkEffect = Tool.VFX.HitSparkEffect:Clone()
+									
+									local ParticlesAttachment = HitCharacter:FindFirstChild("Particles", true)
+
+									if ParticlesAttachment and ParticlesAttachment:IsA("Attachment") then
+										SparkEffect.Parent = ParticlesAttachment
+										SparkEffect.Enabled = true
+									end
+
 									task.delay(0.1, function()
 										CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
 									end)

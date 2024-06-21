@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local RunService = game:GetService("RunService")
 
 local Attributes = {
     ["Character"] = {},
@@ -19,6 +20,31 @@ local JanitorStorage = {}
 local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
 
 local ProfileHandler = require(ServerStorage.Modules.Data.ProfileHandler)
+
+-- Debugging Handle stuff, only for studio
+for _, Object in game:GetDescendants() do
+    if not Object:IsA("BasePart") then
+        continue
+    end
+
+    if Object:GetAttribute("MainHandle") ~= nil then
+        Object.Color = Color3.fromRGB(0, 255, 0)
+        Object.Material = Enum.Material.SmoothPlastic
+        Object.Transparency = 1
+
+        if RunService:IsStudio() then
+            Object.Transparency = 0
+        end
+    elseif Object:GetAttribute("SheathHandle") ~= nil then
+        Object.Color = Color3.fromRGB(255, 0, 0)
+        Object.Material = Enum.Material.SmoothPlastic
+        Object.Transparency = 1
+
+        if RunService:IsStudio() then
+            Object.Transparency = 0
+        end
+    end
+end
 
 local function HandleCharacterSpawn(Player : Player)
     local Character = Player.Character or Player.CharacterAdded:Wait()
