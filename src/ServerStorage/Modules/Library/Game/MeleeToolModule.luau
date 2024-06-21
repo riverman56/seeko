@@ -234,6 +234,8 @@ function MeleeToolModule.Load(Tool: Tool)
 							BV.Parent = HitRootPart
 							Debris:AddItem(BV, 0.1)
 
+							-- TODO: stamina stuff
+
 							if Tool:GetAttribute("CanDismember") == true then
 								CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
 							end
@@ -320,6 +322,8 @@ function MeleeToolModule.Load(Tool: Tool)
 										EvadeAnimation:Play()
 									end
 
+									-- TODO: stamina stuff
+
 									local SparkEffect = Tool.VFX.HitSparkEffect:Clone()
 									
 									local ParticlesAttachment = HitCharacter:FindFirstChild("Particles", true)
@@ -367,6 +371,8 @@ function MeleeToolModule.Load(Tool: Tool)
 		end
 
 		Humanoid:SetAttribute("Guard", Value)
+
+		-- TODO: stamina stuff
 	end))
 end
 

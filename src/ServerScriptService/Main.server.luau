@@ -5,7 +5,9 @@ local RunService = game:GetService("RunService")
 
 local Attributes = {
     ["Character"] = {},
-    ["Player"] = {},
+    ["Player"] = {
+        ["FunkyCamera"] = true,
+    },
     ["Humanoid"] = {
         ["Stamina"] = 100,
         ["MaxStamina"] = 100,
@@ -53,6 +55,8 @@ local function HandleCharacterSpawn(Player : Player)
         repeat task.wait()
         until Character:IsDescendantOf(workspace)
     end
+
+    RunService.Stepped:Wait()
 
     local Humanoid = Character:WaitForChild("Humanoid")
 

@@ -6,8 +6,8 @@ local MaximumMomentum = math.huge
 local Speed = 15
 
 local Character = script:FindFirstAncestorOfClass("Model")
-local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-local RootPart = Humanoid.RootPart
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
 
 local M6D
 local OriginalC0
