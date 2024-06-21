@@ -158,7 +158,7 @@ function CommonFunctions.SpawnParticle(Origin : Instance, Name : string, NewPare
 
 				task.delay(0.1, function()
 					NewParticle.Enabled = false
-					Debris:AddItem(NewParticle, 10)
+					Debris:AddItem(NewParticle, NewParticle.Emission:GetAttribute("Lifetime").Max or 5)
 				end)
 			end
 		end

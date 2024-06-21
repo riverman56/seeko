@@ -1,5 +1,6 @@
+task.wait(1)
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local AmbientSoundManager = require(ReplicatedStorage:WaitForChild("AmbientSound_Manager"))
-
-AmbientSoundManager.Run()
+local AmbientSound_Manager = require(ReplicatedStorage:WaitForChild("AmbientSound_Manager"))
+AmbientSound_Manager.Run()

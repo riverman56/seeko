@@ -1,3 +1,5 @@
+local CollectionService = game:GetService("CollectionService")
+local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
@@ -262,8 +264,8 @@ function MeleeToolModule.Load(Tool: Tool)
 								end
 
 								if Constraints ~= nil and #Constraints >= 0 then
-									local Limb = Constraints[math.random(#Constraints)]
-									local LimbPart = Limb.Attachment1.Parent
+									local LimbConstraint = Constraints[math.random(#Constraints)]
+									local LimbPart = LimbConstraint.Attachment1.Parent
 
 									local LimbBV = Instance.new("BodyVelocity")
 									LimbBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -280,7 +282,7 @@ function MeleeToolModule.Load(Tool: Tool)
 									Debris:AddItem(LimbAV, 0.1)
 									Debris:AddItem(LimbBV, 0.1)
 
-									Limb:Destroy()
+									LimbConstraint:Destroy()
 									CommonFunctions.PlayRandomSound(
 										ReplicatedStorage.Assets.Library.Sounds,
 										"Dismember",
@@ -289,6 +291,8 @@ function MeleeToolModule.Load(Tool: Tool)
 
 									local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
 									BloodEffect.Parent = LimbPart
+									BloodEffect.Emission:SetAttribute("Rate_Burst", 0)
+									BloodEffect.Emission:SetAttribute("Rate", 5)
 									BloodEffect.Enabled = true
 								end
 							end
@@ -331,6 +335,7 @@ function MeleeToolModule.Load(Tool: Tool)
 									if ParticlesAttachment and ParticlesAttachment:IsA("Attachment") then
 										SparkEffect.Parent = ParticlesAttachment
 										SparkEffect.Enabled = true
+										Debris:AddItem(SparkEffect, SparkEffect.Emission:GetAttribute("Lifetime").Max or 1)
 									end
 
 									task.delay(0.1, function()
