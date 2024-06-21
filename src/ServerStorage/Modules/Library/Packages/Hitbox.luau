@@ -21,6 +21,8 @@ Overlap.FilterType = Enum.RaycastFilterType.Exclude
 Overlap.FilterDescendantsInstances = {}
 
 function Hitbox.new(Character: Model, Object: BasePart | Attachment)
+    Overlap.FilterDescendantsInstances = {Character, Object}
+
 	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
 	local RootPart = Humanoid.RootPart
 

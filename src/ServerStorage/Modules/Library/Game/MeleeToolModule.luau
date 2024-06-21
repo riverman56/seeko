@@ -12,15 +12,6 @@ local Hitbox = require(script.Parent.Parent.Packages.Hitbox)
 
 local MeleeToolModule = {}
 
-local EmissionFaces = {
-	"Back",
-	"Bottom",
-	"Front",
-	"Left",
-	"Right",
-	"Top",
-}
-
 function MeleeToolModule.Load(Tool: Tool)
 	assert(
 		Tool and typeof(Tool) == "Instance" and Tool:IsA("Tool"),
@@ -43,10 +34,7 @@ function MeleeToolModule.Load(Tool: Tool)
 	local AnimationsLoaded = false
 	local Animations = nil
 
-	local Equipping = false
-
 	local LastStrike = 0
-	local AttackDebounce = false
 
 	local NewJanitor = Janitor.new()
 	NewJanitor:LinkToInstance(Tool)
@@ -156,7 +144,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 		if MeleeModule.CheckEquip(Character, Tool) == true then
 			NewJanitor:Add(
-				Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
+				Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function()
 					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Sheathe"], 5)
 
 					for _, Object in Weapon_Model:GetDescendants() do
@@ -177,7 +165,7 @@ function MeleeToolModule.Load(Tool: Tool)
 			)
 
 			NewJanitor:Add(
-				Animations.Unequip:GetMarkerReachedSignal("Swing"):Once(function(...)
+				Animations.Unequip:GetMarkerReachedSignal("Swing"):Once(function()
 					CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Swing", MainHandle)
 				end),
 				"Disconnect"
@@ -204,148 +192,149 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if
-				Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost")
-				or Humanoid:GetAttribute("Guard") == true
-				or Humanoid:GetAttribute("Stun") == true
-				or Tool:GetAttribute("Stun") == true
-			then
-				return
-			end
+			if string.find(RequestedAnimation, "Attack") then
+				if
+					Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost")
+					or Humanoid:GetAttribute("Guard") == true
+					or Humanoid:GetAttribute("Stun") == true
+					or Tool:GetAttribute("Stun") == true
+				then
+					return
+				end
 
-			if os.clock() - LastStrike < 0.25 then
-				return
-			end
+				if os.clock() - LastStrike < 0.25 then
+					return
+				end
 
-			Humanoid:GetAttribute("Guard", false)
+				Humanoid:GetAttribute("Guard", false)
 
-			LastStrike = os.clock()
+				LastStrike = os.clock()
 
-			local NewHitbox = Hitbox.new(Character)
-			NewHitbox.Size = Vector3.new(5, 5, 5)
-			NewHitbox.MultiHit = false
-			NewHitbox.Lifetime = 0.1
+				local NewHitbox = Hitbox.new(Character)
+				NewHitbox.Size = Vector3.new(5, 5, 5)
+				NewHitbox.MultiHit = false
+				NewHitbox.Lifetime = 0.1
 
-			NewHitbox.OnHit:Connect(
-				function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
-					local function Damage()
-						HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
+				NewHitbox.OnHit:Connect(
+					function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
+						local function Damage()
+							HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
 
-						ReplicatedStorage.Remotes.Effects:FireAllClients(
-							"Game",
-							"DamageIndicator",
-							HitCharacter.Head,
-							Tool:GetAttribute("Damage") or 20
-						)
-						ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
+							ReplicatedStorage.Remotes.Effects:FireAllClients(
+								"Game",
+								"DamageIndicator",
+								HitCharacter.Head,
+								Tool:GetAttribute("Damage") or 20
+							)
+							ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
 
-						local BV = Instance.new("BodyVelocity")
-						BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
-						BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
-						BV.Parent = HitRootPart
-						Debris:AddItem(BV, 0.1)
+							local BV = Instance.new("BodyVelocity")
+							BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
+							BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
+							BV.Parent = HitRootPart
+							Debris:AddItem(BV, 0.1)
 
-						if Tool:GetAttribute("CanDismember") == true then
-							CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
-						end
-
-						task.delay(0.1, function()
-							CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
-						end)
-
-						if HitHumanoid:GetState() == Enum.HumanoidStateType.Dead or HitHumanoid.Health <= 0 then
-							if Tool:GetAttribute("CanDismember") ~= true then
-								return
+							if Tool:GetAttribute("CanDismember") == true then
+								CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
 							end
 
-							local Constraints = {}
+							task.delay(0.1, function()
+								CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
+							end)
 
-							for _, Object in HitCharacter:GetDescendants() do
-								if not Object:IsA("BallSocketConstraint") then
-									continue
+							if HitHumanoid:GetState() == Enum.HumanoidStateType.Dead or HitHumanoid.Health <= 0 then
+								if Tool:GetAttribute("CanDismember") ~= true then
+									return
 								end
 
-								if Object.Name == "LimbConstraint" then
-									table.insert(Constraints, Object)
-								end
-							end
+								local Constraints = {}
 
-							if Constraints ~= nil and #Constraints >= 0 then
-								local Limb = Constraints[math.random(#Constraints)]
-								local LimbPart = Limb.Attachment1.Parent
+								for _, Object in HitCharacter:GetDescendants() do
+									if not Object:IsA("BallSocketConstraint") then
+										continue
+									end
 
-								local LimbBV = Instance.new("BodyVelocity")
-								LimbBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-								LimbBV.Velocity = Vector3.new(math.random(-20, 20), 20, math.random(-20, 20))
-
-								local LimbAV = Instance.new("BodyAngularVelocity")
-								LimbAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-								LimbAV.AngularVelocity =
-									Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
-
-								LimbAV.Parent = LimbPart
-								LimbBV.Parent = LimbPart
-
-								Debris:AddItem(LimbAV, 0.1)
-								Debris:AddItem(LimbBV, 0.1)
-
-								Limb:Destroy()
-								CommonFunctions.PlayRandomSound(
-									ReplicatedStorage.Assets.Library.Sounds,
-									"Dismember",
-									LimbPart
-								)
-
-								local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
-								BloodEffect.Parent = LimbPart
-								BloodEffect.Enabled = true
-
-								task.delay(1, function()
-									BloodEffect.Enabled = false
-								end)
-							end
-						end
-					end
-
-					local Status = CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
-
-					if Status == "Damaged" then
-						Damage()
-					elseif Status == "Blocked" then
-						local HitTool = HitCharacter:FindFirstChildOfClass("Tool")
-
-						if HitTool then
-							if HitTool:GetAttribute("InHand") == true then
-								local ReturnAnimations = {}
-
-								for _, Animation: Instance in HitTool:WaitForChild("Animations"):GetChildren() do
-									if string.find(Animation.Name, "Evade") then
-										table.insert(ReturnAnimations, Animation)
+									if Object.Name == "LimbConstraint" then
+										table.insert(Constraints, Object)
 									end
 								end
 
-								local AnimationObject = ReturnAnimations[math.random(#ReturnAnimations)]
+								if Constraints ~= nil and #Constraints >= 0 then
+									local Limb = Constraints[math.random(#Constraints)]
+									local LimbPart = Limb.Attachment1.Parent
 
-								local HitAnimator = HitHumanoid:FindFirstChildOfClass("Animator")
-									or Instance.new("Animator", HitHumanoid)
+									local LimbBV = Instance.new("BodyVelocity")
+									LimbBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+									LimbBV.Velocity = Vector3.new(math.random(-20, 20), 20, math.random(-20, 20))
 
-								if AnimationObject and AnimationObject.AnimationId ~= "" then
-									local EvadeAnimation = HitAnimator:LoadAnimation(AnimationObject)
-									EvadeAnimation:Play()
+									local LimbAV = Instance.new("BodyAngularVelocity")
+									LimbAV.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+									LimbAV.AngularVelocity =
+										Vector3.new(math.random(-20, 20), math.random(-20, 20), math.random(-20, 20))
+
+									LimbAV.Parent = LimbPart
+									LimbBV.Parent = LimbPart
+
+									Debris:AddItem(LimbAV, 0.1)
+									Debris:AddItem(LimbBV, 0.1)
+
+									Limb:Destroy()
+									CommonFunctions.PlayRandomSound(
+										ReplicatedStorage.Assets.Library.Sounds,
+										"Dismember",
+										LimbPart
+									)
+
+									local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
+									BloodEffect.Parent = LimbPart
+									BloodEffect.Enabled = true
 								end
+							end
+						end
 
-								task.delay(0.1, function()
-									CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
-								end)
+						local Status =
+							CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
+
+						if Status == "Damaged" then
+							Damage()
+						elseif Status == "Blocked" then
+							local HitTool = HitCharacter:FindFirstChildOfClass("Tool")
+
+							if HitTool then
+								if HitTool:GetAttribute("InHand") == true then
+									local ReturnAnimations = {}
+
+									for _, Animation: Instance in HitTool:WaitForChild("Animations"):GetChildren() do
+										if string.find(Animation.Name, "Evade") then
+											table.insert(ReturnAnimations, Animation)
+										end
+									end
+
+									local AnimationObject = ReturnAnimations[math.random(#ReturnAnimations)]
+
+									local HitAnimator = HitHumanoid:FindFirstChildOfClass("Animator")
+										or Instance.new("Animator", HitHumanoid)
+
+									if AnimationObject and AnimationObject.AnimationId ~= "" then
+										local EvadeAnimation = HitAnimator:LoadAnimation(AnimationObject)
+										EvadeAnimation:Play()
+									end
+
+									task.delay(0.1, function()
+										CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
+									end)
+								else
+									Damage()
+								end
 							else
 								Damage()
 							end
-						else
-							Damage()
 						end
 					end
-				end
-			)
+				)
+			elseif string.find(RequestedAnimation, "GuardBreak") then
+				print("guardbreak")
+			end
 		end, "Disconnect")
 	)
 

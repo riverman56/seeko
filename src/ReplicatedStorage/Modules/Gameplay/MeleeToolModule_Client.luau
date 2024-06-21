@@ -26,6 +26,7 @@ function MeleeToolModule.Load(Tool: Tool)
 	local Equipped = false
 	local Guarding = false
 	local AttackDebounce = false
+	local GuardBreakDebounce = false
 
 	local Loaded = false
 
@@ -58,7 +59,6 @@ function MeleeToolModule.Load(Tool: Tool)
 			if string.find(Animation.Name, Name) then
 				local AnimationIndex = tonumber(Animation.Name:match("%d+"))
 				ReturnAnimations[AnimationIndex] = Animation
-				-- table.insert(ReturnAnimations, Animation)
 			end
 		end
 
@@ -198,7 +198,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function(...)
 					CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Swing", RootPart)
-					Tool.Remotes.Attack:FireServer(AttackAnimation)
+					Tool.Remotes.Attack:FireServer(AttackAnimation.Name)
 
 					for _, Object in Character:GetDescendants() do
 						if Object:IsA("Trail") and Object:GetAttribute("StrikeEnable") ~= nil then
@@ -242,6 +242,20 @@ function MeleeToolModule.Load(Tool: Tool)
 				Tool.Remotes.Guard:FireServer(true)
 
 				Guarding = true
+			end
+
+			if
+				Input.KeyCode == Enum.KeyCode.Q
+				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardBreakStaminaCost")
+				and Tool:GetAttribute("Debounce_Attack") == false
+				and Tool:GetAttribute("Debounce_GuardBreak") == false
+				and Humanoid:GetAttribute("Guard") == false
+				and AttackDebounce == false
+				and Humanoid:GetAttribute("Stun") ~= true
+				and Tool:GetAttribute("Stun") ~= true
+				and GuardBreakDebounce == false
+			then
+				print("guardbreak")
 			end
 		end),
 		"Disconnect"

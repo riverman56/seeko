@@ -7,7 +7,6 @@ local Sounds = SoundService:WaitForChild("FootstepSounds")
 local Player = Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-local RootPart = Humanoid.RootPart
 
 local LastMaterial
 local Walking = false
