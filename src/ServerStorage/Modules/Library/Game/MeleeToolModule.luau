@@ -3,6 +3,7 @@ local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
 
 local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
 local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
@@ -36,10 +37,33 @@ function MeleeToolModule.Load(Tool: Tool)
 	local AnimationsLoaded = false
 	local Animations = nil
 
+	local AttackDebounce = false
 	local LastStrike = 0
+
+	local SpamCount = -2
 
 	local NewJanitor = Janitor.new()
 	NewJanitor:LinkToInstance(Tool)
+
+	local function GetPlayingAnimation(Animation : AnimationTrack)
+		for _, AnimationTrack in Animator:GetPlayingAnimationTracks() do
+			local NewAnimationTrack = {}
+			NewAnimationTrack.Animation = nil
+			NewAnimationTrack.Speed = AnimationTrack.Speed
+			NewAnimationTrack.Track = AnimationTrack
+
+			for _, AnimationObject in Tool.Animations:GetChildren() do
+				if string.find(AnimationObject.Name, Animation.Name) and AnimationObject.AnimationId == AnimationTrack.Animation.AnimationId and math.floor(NewAnimationTrack.Speed * 100) / 100 <= Tool:GetAttribute("SpeedModifier") then
+					NewAnimationTrack.Animation = AnimationObject
+					NewAnimationTrack.Name = AnimationObject
+
+					return NewAnimationTrack
+				end
+			end
+		end
+
+		return nil
+	end
 
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
@@ -202,6 +226,9 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
+			local Connection : RBXScriptConnection
+			local Checks = 0
+
 			if string.find(RequestedAnimation.Name, "Attack") then
 				if
 					Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost")
@@ -215,6 +242,31 @@ function MeleeToolModule.Load(Tool: Tool)
 				if os.clock() - LastStrike < 0.25 then
 					return
 				end
+
+				Connection = RunService.Heartbeat:Connect(function()
+					Checks += 1
+
+					if RequestedAnimation then
+						if Connection then
+							Connection:Disconnect()
+							Connection = nil
+						end
+
+						SpamCount += 1
+
+						local SCMultiplier = 1 + math.clamp(SpamCount, 0, 10) / 2
+						-- print(SCMultiplier)
+
+						Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaCost") * SCMultiplier, 0, Humanoid:GetAttribute("MaxStamina")))
+
+						task.delay(1.5, function()
+							SpamCount -= 1
+						end)
+					elseif Checks <= 100 then
+						Connection:Disconnect()
+						Connection = nil
+					end
+				end)
 
 				Humanoid:GetAttribute("Guard", false)
 
@@ -243,8 +295,6 @@ function MeleeToolModule.Load(Tool: Tool)
 							BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
 							BV.Parent = HitRootPart
 							Debris:AddItem(BV, 0.1)
-
-							-- TODO: stamina stuff
 
 							if Tool:GetAttribute("CanDismember") == true then
 								CommonFunctions.SpawnParticle(Tool, "BloodSpillEffect", HitPart, true)
@@ -319,7 +369,10 @@ function MeleeToolModule.Load(Tool: Tool)
 							local HitTool = HitCharacter:FindFirstChildOfClass("Tool")
 
 							if HitTool then
-								if HitTool:GetAttribute("InHand") == true then
+								if
+									HitTool:GetAttribute("InHand") == true
+									and HitHumanoid:GetAttribute("Stamina") >= Tool:GetAttribute("StaminaDamage")
+								then
 									local ReturnAnimations = {}
 
 									for _, Animation: Instance in HitTool:WaitForChild("Animations"):GetChildren() do
@@ -338,7 +391,10 @@ function MeleeToolModule.Load(Tool: Tool)
 										EvadeAnimation:Play()
 									end
 
-									-- TODO: stamina stuff
+									HitHumanoid:SetAttribute(
+										"Stamina",
+										HitHumanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaDamage")
+									)
 
 									local SparkEffect = Tool.VFX.HitSparkEffect:Clone()
 
@@ -375,6 +431,31 @@ function MeleeToolModule.Load(Tool: Tool)
 					return
 				end
 
+				Connection = RunService.Heartbeat:Connect(function()
+					Checks += 1
+
+					if RequestedAnimation then
+						if Connection then
+							Connection:Disconnect()
+							Connection = nil
+						end
+
+						SpamCount += 1
+
+						local SCMultiplier = 1 + math.clamp(SpamCount, 0, 10) / 2
+						-- print(SCMultiplier)
+
+						Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaCost") * SCMultiplier, 0, Humanoid:GetAttribute("MaxStamina")))
+
+						task.delay(1.5, function()
+							SpamCount -= 1
+						end)
+					elseif Checks <= 100 then
+						Connection:Disconnect()
+						Connection = nil
+					end
+				end)
+
 				local NewHitbox = Hitbox.new(Character)
 				NewHitbox.Size = Vector3.new(5, 5, 5)
 				NewHitbox.MultiHit = false
@@ -385,7 +466,7 @@ function MeleeToolModule.Load(Tool: Tool)
 						local Status =
 							CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
 
-						if Status == "Damaged" then
+						local function Damage()
 							HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
 
 							if HitHumanoid.Health - Tool:GetAttribute("Damage") * 0.3 <= 0 then
@@ -394,21 +475,44 @@ function MeleeToolModule.Load(Tool: Tool)
 								HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
 							end
 
-							CommonFunctions.PlayRandomSound(Tool.SFX, "SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"), HitRootPart)
+							CommonFunctions.PlayRandomSound(
+								Tool.SFX,
+								"SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"),
+								HitRootPart
+							)
+						end
+
+						if Status == "Damaged" then
+							Damage()
 						elseif Status == "Blocked" then
-							-- TODO: stamina stuff
+							if HitHumanoid:GetAttribute("Stamina") >= Tool:GetAttribute("GuardBreakStaminaDrain") then
+								HitHumanoid:SetAttribute(
+									"Stamina",
+									HitHumanoid:GetAttribute("Stamina") - Tool:GetAttribute("GuardBreakStaminaDrain")
+								)
 
-							CommonFunctions.PlayRandomSound(Tool.SFX, "SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"), HitRootPart)
+								CommonFunctions.PlayRandomSound(
+									Tool.SFX,
+									"SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"),
+									HitRootPart
+								)
 
-							CommonFunctions.PlaySound(HitRootPart, ReplicatedStorage.Assets.Library.Sounds.GuardBreak, 5)
+								CommonFunctions.PlaySound(
+									HitRootPart,
+									ReplicatedStorage.Assets.Library.Sounds.GuardBreak,
+									5
+								)
 
-							local BV = Instance.new("BodyVelocity")
-							BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
-							BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback") * 2
-							BV.Parent = HitRootPart
-							Debris:AddItem(BV, 0.1)
+								local BV = Instance.new("BodyVelocity")
+								BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
+								BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback") * 2
+								BV.Parent = HitRootPart
+								Debris:AddItem(BV, 0.1)
 
-							HitHumanoid:SetAttribute("Guard", false)
+								HitHumanoid:SetAttribute("Guard", false)
+							else
+								Damage()
+							end
 						end
 					end
 				)
@@ -435,9 +539,31 @@ function MeleeToolModule.Load(Tool: Tool)
 			return
 		end
 
-		Humanoid:SetAttribute("Guard", Value)
+		if Value == true and Equipped == true then
+			Humanoid:SetAttribute("Guard", Value)
 
-		-- TODO: stamina stuff
+			task.defer(function()
+				while Humanoid:GetAttribute("Guard") == true do
+					if Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("GuardStaminaCost") then
+						Humanoid:SetAttribute("Guard", false)
+						break
+					end
+	
+					if Equipped ~= true then
+						Humanoid:SetAttribute("Guard", false)
+						break
+					end
+	
+					task.wait(0.15)
+	
+					Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("GuardStaminaCost"), 0, Humanoid:GetAttribute("MaxStamina")))
+				
+					task.wait()
+				end
+			end)
+		else
+			Humanoid:SetAttribute("Guard", false)
+		end
 	end))
 end
 

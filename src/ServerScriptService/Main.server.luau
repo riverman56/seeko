@@ -1,3 +1,5 @@
+task.wait()
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
@@ -9,11 +11,12 @@ local Attributes = {
         ["FunkyCamera"] = true,
     },
     ["Humanoid"] = {
-        ["Stamina"] = 100,
-        ["MaxStamina"] = 100,
-        ["DefMaxStamina"] = 100,
+        ["Stamina"] = 200,
+        ["MaxStamina"] = 200,
+        ["DefMaxStamina"] = 200,
         ["Guard"] = false,
         ["Stun"] = false,
+        ["Running"] = false,
     },
 }
 
