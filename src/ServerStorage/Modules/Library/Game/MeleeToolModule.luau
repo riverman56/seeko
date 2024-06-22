@@ -35,35 +35,14 @@ function MeleeToolModule.Load(Tool: Tool)
 	local Equipped = false
 
 	local AnimationsLoaded = false
-	local Animations = nil
+	local Animations: { [string]: AnimationTrack } = nil
 
-	local AttackDebounce = false
 	local LastStrike = 0
 
 	local SpamCount = -2
 
 	local NewJanitor = Janitor.new()
 	NewJanitor:LinkToInstance(Tool)
-
-	local function GetPlayingAnimation(Animation : AnimationTrack)
-		for _, AnimationTrack in Animator:GetPlayingAnimationTracks() do
-			local NewAnimationTrack = {}
-			NewAnimationTrack.Animation = nil
-			NewAnimationTrack.Speed = AnimationTrack.Speed
-			NewAnimationTrack.Track = AnimationTrack
-
-			for _, AnimationObject in Tool.Animations:GetChildren() do
-				if string.find(AnimationObject.Name, Animation.Name) and AnimationObject.AnimationId == AnimationTrack.Animation.AnimationId and math.floor(NewAnimationTrack.Speed * 100) / 100 <= Tool:GetAttribute("SpeedModifier") then
-					NewAnimationTrack.Animation = AnimationObject
-					NewAnimationTrack.Name = AnimationObject
-
-					return NewAnimationTrack
-				end
-			end
-		end
-
-		return nil
-	end
 
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
@@ -133,7 +112,7 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 		end
 
-		if MeleeModule.CheckEquip(Character, Tool) == false then
+		if MeleeModule.CheckEquip(Character, Tool) == false and Animations.Equip then
 			NewJanitor:Add(
 				Animations.Equip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
 					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Unsheathe"], 5)
@@ -173,10 +152,14 @@ function MeleeToolModule.Load(Tool: Tool)
 
 	Tool.Unequipped:Connect(function()
 		Equipped = false
+		
+		if Animations.Equip and Animations.Equip.IsPlaying == true then
+			Animations.Equip:Stop()
+		end
 
 		Humanoid:SetAttribute("Guard", false)
 
-		if MeleeModule.CheckEquip(Character, Tool) == true then
+		if MeleeModule.CheckEquip(Character, Tool) == true and Animations.Unequip then
 			NewJanitor:Add(
 				Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function()
 					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Sheathe"], 5)
@@ -199,13 +182,20 @@ function MeleeToolModule.Load(Tool: Tool)
 			)
 
 			NewJanitor:Add(
-				Animations.Unequip:GetMarkerReachedSignal("Swing"):Once(function()
-					CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Swing", MainHandle)
+				Animations.Unequip:GetMarkerReachedSignal("PlaySound"):Once(function(SoundName: string)
+					CommonFunctions.PlayRandomSound(Tool.SFX, SoundName, MainHandle)
 				end),
 				"Disconnect"
 			)
 
-			Animations.Unequip:Play()
+			local OtherTool = Character:FindFirstChildOfClass("Tool")
+
+			if OtherTool and OtherTool ~= Tool then
+				Animations.Unequip:Play()
+				Animations.Unequip:AdjustSpeed(100)
+			elseif not OtherTool then
+				Animations.Unequip:Play()
+			end
 		end
 
 		Tool:SetAttribute("InHand", false)
@@ -226,7 +216,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			local Connection : RBXScriptConnection
+			local Connection: RBXScriptConnection
 			local Checks = 0
 
 			if string.find(RequestedAnimation.Name, "Attack") then
@@ -257,7 +247,14 @@ function MeleeToolModule.Load(Tool: Tool)
 						local SCMultiplier = 1 + math.clamp(SpamCount, 0, 10) / 2
 						-- print(SCMultiplier)
 
-						Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaCost") * SCMultiplier, 0, Humanoid:GetAttribute("MaxStamina")))
+						Humanoid:SetAttribute(
+							"Stamina",
+							math.clamp(
+								Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaCost") * SCMultiplier,
+								0,
+								Humanoid:GetAttribute("MaxStamina")
+							)
+						)
 
 						task.delay(1.5, function()
 							SpamCount -= 1
@@ -409,6 +406,12 @@ function MeleeToolModule.Load(Tool: Tool)
 										)
 									end
 
+									task.defer(function()
+										Tool:SetAttribute("Stun", true)
+										wait(0.5)
+										Tool:SetAttribute("Stun", false)
+									end)
+
 									task.delay(0.1, function()
 										CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
 									end)
@@ -445,7 +448,14 @@ function MeleeToolModule.Load(Tool: Tool)
 						local SCMultiplier = 1 + math.clamp(SpamCount, 0, 10) / 2
 						-- print(SCMultiplier)
 
-						Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaCost") * SCMultiplier, 0, Humanoid:GetAttribute("MaxStamina")))
+						Humanoid:SetAttribute(
+							"Stamina",
+							math.clamp(
+								Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaCost") * SCMultiplier,
+								0,
+								Humanoid:GetAttribute("MaxStamina")
+							)
+						)
 
 						task.delay(1.5, function()
 							SpamCount -= 1
@@ -548,16 +558,23 @@ function MeleeToolModule.Load(Tool: Tool)
 						Humanoid:SetAttribute("Guard", false)
 						break
 					end
-	
+
 					if Equipped ~= true then
 						Humanoid:SetAttribute("Guard", false)
 						break
 					end
-	
+
 					task.wait(0.15)
-	
-					Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("GuardStaminaCost"), 0, Humanoid:GetAttribute("MaxStamina")))
-				
+
+					Humanoid:SetAttribute(
+						"Stamina",
+						math.clamp(
+							Humanoid:GetAttribute("Stamina") - Tool:GetAttribute("GuardStaminaCost"),
+							0,
+							Humanoid:GetAttribute("MaxStamina")
+						)
+					)
+
 					task.wait()
 				end
 			end)

@@ -21,7 +21,7 @@ Overlap.FilterType = Enum.RaycastFilterType.Exclude
 Overlap.FilterDescendantsInstances = {}
 
 function Hitbox.new(Character: Model, Object: BasePart | Attachment)
-    Overlap.FilterDescendantsInstances = {Character, Object}
+	Overlap.FilterDescendantsInstances = { Character, Object }
 
 	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
 	local RootPart = Humanoid.RootPart
@@ -98,6 +98,7 @@ function Hitbox.new(Character: Model, Object: BasePart | Attachment)
 				if
 					HitHumanoid
 					and HitHumanoid:GetState() ~= Enum.HumanoidStateType.Dead
+					and not HitCharacter:FindFirstChildOfClass("ForceField")
 					and not table.find(self.HitHumanoids, HitHumanoid)
 				then
 					if HitHumanoid.PlatformStand == true then

@@ -8,6 +8,11 @@ local WhitelistedAnimations = {
     "guard"
 }
 
+local Overrides = {
+    ["Equip"] = Enum.AnimationPriority.Action3,
+    ["Guard"] = Enum.AnimationPriority.Action,
+}
+
 function MeleeModule:LoadServerAnimations(Animator : Animator, AnimationFolder : Folder)
     local Animations = {}
 
@@ -17,6 +22,13 @@ function MeleeModule:LoadServerAnimations(Animator : Animator, AnimationFolder :
                 local LoadedAnimation = Animator:LoadAnimation(Animation)
     
                 Animations[Animation.Name] = LoadedAnimation
+
+                for AnimationName, Override in Overrides do
+                    if string.find(Animation.Name, AnimationName) then
+                        LoadedAnimation.Priority = Override
+                        break
+                    end
+                end
             end
         end
     end

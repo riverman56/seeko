@@ -95,12 +95,14 @@ function MeleeToolModule.Load(Tool: Tool)
 			Animations.Guard:Stop()
 		end
 
-		if Animations.SheathIdle.IsPlaying == false then
+		if Animations.SheathIdle and Animations.SheathIdle.IsPlaying == false then
 			Animations.SheathIdle:Play()
 		end
 
 		task.delay(0.2, function()
-			Animations.Idle:Play()
+			if Animations.Idle and Animations.Idle.IsPlaying == false then
+				Animations.Idle:Play()
+			end
 		end)
 
 		Equipped = true
@@ -110,6 +112,14 @@ function MeleeToolModule.Load(Tool: Tool)
 		Equipped = false
 
 		Guarding = false
+
+		local OtherTool = Character:FindFirstChildOfClass("Tool")
+
+		if OtherTool and OtherTool ~= Tool then
+			if Animations.SheathIdle and Animations.SheathIdle.IsPlaying == true then
+				Animations.SheathIdle:Stop()
+			end
+		end
 
 		if
 			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible == true
@@ -124,7 +134,9 @@ function MeleeToolModule.Load(Tool: Tool)
 		end
 
 		task.delay(0.2, function()
-			Animations.Idle:Stop()
+			if Animations.Idle and Animations.Idle.IsPlaying == true then
+				Animations.Idle:Stop()
+			end
 		end)
 	end)
 
@@ -162,14 +174,14 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Humanoid:GetAttribute("Stun") ~= true
 				and Tool:GetAttribute("Stun") ~= true
 			then
+				Tool:SetAttribute("Debounce_Attack", true)
+				AttackDebounce = true
+
 				if os.clock() - LastStrike >= 1 then
 					StrikeOrder = 1
 				end
 
 				LastStrike = os.clock()
-
-				Tool:SetAttribute("Debounce_Attack", true)
-				AttackDebounce = true
 
 				local AttackAnimations = GetAnimationsWithName("Attack_")
 

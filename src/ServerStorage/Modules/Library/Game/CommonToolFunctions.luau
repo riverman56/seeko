@@ -88,6 +88,8 @@ function CommonToolFunctions.LoadModelSkin(Player : Player, Model : Model, Tool 
 		elseif Object:GetAttribute("SheathHandle") == true then
 			CommonToolFunctions.CreateM6D(Character.Torso, Object)
 			SheathHandle = Object
+		elseif Object:GetAttribute("Handle") ~= nil and Object ~= MainHandle and Object ~= SheathHandle then
+			CommonToolFunctions.CreateM6D(Character:FindFirstChild(Object:GetAttribute("Handle")) or Character.Torso, Object)
 		end
 	end
 	
@@ -105,7 +107,7 @@ function CommonToolFunctions.LoadModelSkin(Player : Player, Model : Model, Tool 
 	end
 	
 	if not SheathHandle then
-		CommonToolFunctions.CreateM6D(Character["Right Arm"], MainHandle)
+		CommonToolFunctions.CreateM6D(Character:FindFirstChild(MainHandle:GetAttribute("Handle")) or Character["Right Arm"], MainHandle)
 	else
 		local Weld = Instance.new("Weld")
 		Weld.Part0 = SheathHandle

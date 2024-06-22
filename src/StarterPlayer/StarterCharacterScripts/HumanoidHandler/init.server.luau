@@ -60,9 +60,9 @@ Humanoid:GetAttributeChangedSignal("Stamina"):Connect(function()
     local OldValue = Humanoid:GetAttribute("Stamina")
     StaminaCanRegen = false
 
-    task.wait(0.5)
+    task.wait(1)
 
-    if  Humanoid:GetAttribute("Stamina") == OldValue then
+    if Humanoid:GetAttribute("Stamina") == OldValue then
         StaminaCanRegen = true
     end
 end)
@@ -74,10 +74,6 @@ Humanoid:GetAttributeChangedSignal("MaxStamina"):Connect(function()
         MaxStaminaSkipCheck = false
         return
     end
-end)
-
-Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-    Humanoid.MaxHealth = math.clamp(math.floor(Humanoid.Health / 10) * 10 + 10 - 1, 0, 100)
 end)
 
 script:WaitForChild("JumpRemote").OnServerEvent:Connect(function(ReceivedPlayer : Player)

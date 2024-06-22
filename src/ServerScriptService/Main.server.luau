@@ -32,6 +32,10 @@ for _, Object in game:GetDescendants() do
         continue
     end
 
+    if Object:GetAttribute("NoDebug") ~= nil then
+        continue
+    end
+
     if Object:GetAttribute("MainHandle") ~= nil then
         Object.Color = Color3.fromRGB(0, 255, 0)
         Object.Material = Enum.Material.SmoothPlastic
@@ -49,6 +53,10 @@ for _, Object in game:GetDescendants() do
             Object.Transparency = 0
         end
     end
+end
+
+if not RunService:IsStudio() then
+    workspace.Music.Playing = true
 end
 
 local function HandleCharacterSpawn(Player : Player)
