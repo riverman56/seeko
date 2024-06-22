@@ -91,6 +91,14 @@ function MeleeToolModule.Load(Tool: Tool)
 
 		Guarding = false
 
+		for _, AnimationTrack: AnimationTrack in Animator:GetPlayingAnimationTracks() do
+			if not AnimationTrack:IsA("AnimationTrack") or not string.find(AnimationTrack.Name, "SheathIdle") then
+				continue
+			end
+
+			AnimationTrack:Stop()
+		end
+
 		if Animations.Guard and Animations.Guard.IsPlaying == true then
 			Animations.Guard:Stop()
 		end
@@ -211,7 +219,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function(...)
 					CommonFunctions.PlayRandomSound(
 						Tool.SFX,
-						"SFX" .. AttackAnimation.Animation:GetAttribute("SFX_Swing"),
+						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
 						RootPart
 					)
 					Tool.Remotes.Attack:FireServer(AttackAnimation.Animation)
@@ -290,7 +298,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
 					CommonFunctions.PlayRandomSound(
 						Tool.SFX,
-						"SFX" .. AttackAnimation.Animation:GetAttribute("SFX_Swing"),
+						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
 						RootPart
 					)
 					Tool.Remotes.Attack:FireServer(AttackAnimation.Animation)

@@ -152,7 +152,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 	Tool.Unequipped:Connect(function()
 		Equipped = false
-		
+
 		if Animations.Equip and Animations.Equip.IsPlaying == true then
 			Animations.Equip:Stop()
 		end
@@ -202,7 +202,7 @@ function MeleeToolModule.Load(Tool: Tool)
 	end)
 
 	NewJanitor:Add(
-		Tool.Remotes.Attack.OnServerEvent:Connect(function(ReceivedPlayer: Player, RequestedAnimation: Instance)
+		Tool.Remotes.Attack.OnServerEvent:Connect(function(ReceivedPlayer: Player, RequestedAnimation: AnimationTrack)
 			if not Player or not Character or not Humanoid or not RootPart or not Equipped then
 				return
 			end
@@ -270,7 +270,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				LastStrike = os.clock()
 
 				local NewHitbox = Hitbox.new(Character)
-				NewHitbox.Size = Vector3.new(5, 5, 5)
+				NewHitbox.Size = RequestedAnimation:GetAttribute("Range") or Vector3.new(5, 5, 5)
 				NewHitbox.MultiHit = false
 				NewHitbox.Lifetime = 0.1
 
@@ -300,7 +300,7 @@ function MeleeToolModule.Load(Tool: Tool)
 							task.delay(0.1, function()
 								CommonFunctions.PlayRandomSound(
 									Tool.SFX,
-									"SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"),
+									RequestedAnimation:GetAttribute("SFX_Hit"),
 									HitRootPart
 								)
 							end)
@@ -467,7 +467,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				end)
 
 				local NewHitbox = Hitbox.new(Character)
-				NewHitbox.Size = Vector3.new(5, 5, 5)
+				NewHitbox.Size = RequestedAnimation:GetAttribute("Range") or Vector3.new(5, 5, 5)
 				NewHitbox.MultiHit = false
 				NewHitbox.Lifetime = 0.1
 
@@ -487,7 +487,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 							CommonFunctions.PlayRandomSound(
 								Tool.SFX,
-								"SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"),
+								RequestedAnimation:GetAttribute("SFX_Hit"),
 								HitRootPart
 							)
 						end
@@ -503,7 +503,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 								CommonFunctions.PlayRandomSound(
 									Tool.SFX,
-									"SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"),
+									RequestedAnimation:GetAttribute("SFX_Hit"),
 									HitRootPart
 								)
 

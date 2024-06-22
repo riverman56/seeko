@@ -9,6 +9,7 @@ local Attributes = {
     ["Character"] = {},
     ["Player"] = {
         ["FunkyCamera"] = true,
+        ["Hitbox"] = false,
     },
     ["Humanoid"] = {
         ["Stamina"] = 200,
@@ -33,6 +34,7 @@ for _, Object in game:GetDescendants() do
     end
 
     if Object:GetAttribute("NoDebug") ~= nil then
+        Object.Transparency = 1
         continue
     end
 
