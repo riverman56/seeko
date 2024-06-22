@@ -2,14 +2,22 @@ local CMTF = require(script.Parent.CommonToolFunctions)
 
 local MeleeModule = {}
 
-function MeleeModule:LoadEquipAnimations(Animator : Animator, AnimationFolder : Folder)
+local WhitelistedAnimations = {
+    "unequip",
+    "equip",
+    "guard"
+}
+
+function MeleeModule:LoadServerAnimations(Animator : Animator, AnimationFolder : Folder)
     local Animations = {}
 
     for _, Animation in AnimationFolder:GetChildren() do
-        if Animation:IsA("Animation") and string.find(string.lower(Animation.Name), "equip") then
-            local LoadedAnimation = Animator:LoadAnimation(Animation)
-
-            Animations[Animation.Name] = LoadedAnimation
+        for _, WhitelistedAnimationName in WhitelistedAnimations do
+            if Animation:IsA("Animation") and string.find(string.lower(Animation.Name), WhitelistedAnimationName) then
+                local LoadedAnimation = Animator:LoadAnimation(Animation)
+    
+                Animations[Animation.Name] = LoadedAnimation
+            end
         end
     end
 

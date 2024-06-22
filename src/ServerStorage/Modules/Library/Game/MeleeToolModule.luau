@@ -52,7 +52,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 		if AnimationsLoaded == false then
 			AnimationsLoaded = true
-			Animations = MeleeModule:LoadEquipAnimations(Animator, Tool.Animations)
+			Animations = MeleeModule:LoadServerAnimations(Animator, Tool.Animations)
 		end
 
 		local PotentialGripR = Character["Right Arm"]:FindFirstChild("RightGripAttachment")
@@ -134,6 +134,14 @@ function MeleeToolModule.Load(Tool: Tool)
 			Animations.Equip:Play()
 		end
 
+		Humanoid:GetAttributeChangedSignal("Guard"):Connect(function()
+			if Humanoid:GetAttribute("Guard") == true then
+				Animations.Guard:Play()
+			else
+				Animations.Guard:Stop()
+			end
+		end)
+
 		Tool:SetAttribute("InHand", true)
 
 		Equipped = true
@@ -194,7 +202,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if string.find(RequestedAnimation, "Attack") then
+			if string.find(RequestedAnimation.Name, "Attack") then
 				if
 					Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("StaminaCost")
 					or Humanoid:GetAttribute("Guard") == true
@@ -243,7 +251,11 @@ function MeleeToolModule.Load(Tool: Tool)
 							end
 
 							task.delay(0.1, function()
-								CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Hit", HitRootPart)
+								CommonFunctions.PlayRandomSound(
+									Tool.SFX,
+									"SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"),
+									HitRootPart
+								)
 							end)
 
 							if HitHumanoid:GetState() == Enum.HumanoidStateType.Dead or HitHumanoid.Health <= 0 then
@@ -329,13 +341,16 @@ function MeleeToolModule.Load(Tool: Tool)
 									-- TODO: stamina stuff
 
 									local SparkEffect = Tool.VFX.HitSparkEffect:Clone()
-									
+
 									local ParticlesAttachment = HitCharacter:FindFirstChild("Particles", true)
 
 									if ParticlesAttachment and ParticlesAttachment:IsA("Attachment") then
 										SparkEffect.Parent = ParticlesAttachment
 										SparkEffect.Enabled = true
-										Debris:AddItem(SparkEffect, SparkEffect.Emission:GetAttribute("Lifetime").Max or 1)
+										Debris:AddItem(
+											SparkEffect,
+											SparkEffect.Emission:GetAttribute("Lifetime").Max or 1
+										)
 									end
 
 									task.delay(0.1, function()
@@ -350,8 +365,53 @@ function MeleeToolModule.Load(Tool: Tool)
 						end
 					end
 				)
-			elseif string.find(RequestedAnimation, "GuardBreak") then
-				print("guardbreak")
+			elseif string.find(RequestedAnimation.Name, "GuardBreak") then
+				if
+					Humanoid:GetAttribute("Stamina") < Tool:GetAttribute("GuardBreakStaminaCost")
+					or Humanoid:GetAttribute("Guard") == true
+					or Humanoid:GetAttribute("Stun") == true
+					or Tool:GetAttribute("Stun") == true
+				then
+					return
+				end
+
+				local NewHitbox = Hitbox.new(Character)
+				NewHitbox.Size = Vector3.new(5, 5, 5)
+				NewHitbox.MultiHit = false
+				NewHitbox.Lifetime = 0.1
+
+				NewHitbox.OnHit:Connect(
+					function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
+						local Status =
+							CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
+
+						if Status == "Damaged" then
+							HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
+
+							if HitHumanoid.Health - Tool:GetAttribute("Damage") * 0.3 <= 0 then
+								HitHumanoid.Health = 1
+							else
+								HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
+							end
+
+							CommonFunctions.PlayRandomSound(Tool.SFX, "SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"), HitRootPart)
+						elseif Status == "Blocked" then
+							-- TODO: stamina stuff
+
+							CommonFunctions.PlayRandomSound(Tool.SFX, "SFX" .. RequestedAnimation:GetAttribute("SFX_Hit"), HitRootPart)
+
+							CommonFunctions.PlaySound(HitRootPart, ReplicatedStorage.Assets.Library.Sounds.GuardBreak, 5)
+
+							local BV = Instance.new("BodyVelocity")
+							BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
+							BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback") * 2
+							BV.Parent = HitRootPart
+							Debris:AddItem(BV, 0.1)
+
+							HitHumanoid:SetAttribute("Guard", false)
+						end
+					end
+				)
 			end
 		end, "Disconnect")
 	)

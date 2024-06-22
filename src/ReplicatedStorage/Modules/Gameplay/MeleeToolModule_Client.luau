@@ -197,8 +197,12 @@ function MeleeToolModule.Load(Tool: Tool)
 				end
 
 				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function(...)
-					CommonFunctions.PlayRandomSound(Tool.SFX, "SFX_Swing", RootPart)
-					Tool.Remotes.Attack:FireServer(AttackAnimation.Name)
+					CommonFunctions.PlayRandomSound(
+						Tool.SFX,
+						"SFX" .. AttackAnimation.Animation:GetAttribute("SFX_Swing"),
+						RootPart
+					)
+					Tool.Remotes.Attack:FireServer(AttackAnimation.Animation)
 
 					for _, Object in Character:GetDescendants() do
 						if Object:IsA("Trail") and Object:GetAttribute("StrikeEnable") ~= nil then
@@ -238,7 +242,6 @@ function MeleeToolModule.Load(Tool: Tool)
 
 				LastGuard = os.clock()
 
-				Animations.Guard:Play()
 				Tool.Remotes.Guard:FireServer(true)
 
 				Guarding = true
@@ -255,7 +258,41 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Tool:GetAttribute("Stun") ~= true
 				and GuardBreakDebounce == false
 			then
-				print("guardbreak")
+				Tool:SetAttribute("Debounce_Attack", true)
+				Tool:SetAttribute("Debounce_GuardBreak", true)
+				AttackDebounce = true
+				GuardBreakDebounce = true
+
+				local AttackAnimations = GetAnimationsWithName("Attack_")
+
+				for _, AttackAnimation in AttackAnimations do
+					if AttackAnimation.IsPlaying == true then
+						AttackAnimation:Stop(0.2)
+					end
+				end
+
+				local AttackAnimation = Animations.GuardBreak
+				AttackAnimation:Play(0.1)
+				AttackAnimation:AdjustSpeed(Tool:GetAttribute("SpeedModifier"))
+
+				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
+					CommonFunctions.PlayRandomSound(
+						Tool.SFX,
+						"SFX" .. AttackAnimation.Animation:GetAttribute("SFX_Swing"),
+						RootPart
+					)
+					Tool.Remotes.Attack:FireServer(AttackAnimation.Animation)
+				end)
+
+				AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
+					Tool:SetAttribute("Debounce_Attack", false)
+					AttackDebounce = false
+
+					task.delay(3, function()
+						GuardBreakDebounce = false
+						Tool:SetAttribute("Debounce_GuardBreak", false)
+					end)
+				end)
 			end
 		end),
 		"Disconnect"
@@ -272,8 +309,7 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if Input.UserInputType == Enum.UserInputType.MouseButton2 then
-				if Animations.Guard and Animations.Guard.IsPlaying == true then
-					Animations.Guard:Stop()
+				if Guarding == true and Equipped == true then
 					Tool.Remotes.Guard:FireServer(false)
 					Guarding = false
 				end
