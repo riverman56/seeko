@@ -138,7 +138,7 @@ function MeleeToolModule.Load(Tool: Tool)
 		end
 
 		Humanoid:GetAttributeChangedSignal("Guard"):Connect(function()
-			if Humanoid:GetAttribute("Guard") == true then
+			if Humanoid:GetAttribute("Guard") == true and Equipped == true then
 				Animations.Guard:Play()
 			else
 				Animations.Guard:Stop()
@@ -265,7 +265,7 @@ function MeleeToolModule.Load(Tool: Tool)
 					end
 				end)
 
-				Humanoid:GetAttribute("Guard", false)
+				Humanoid:SetAttribute("Guard", false)
 
 				LastStrike = os.clock()
 
@@ -289,7 +289,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 							local BV = Instance.new("BodyVelocity")
 							BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
-							BV.Velocity = MainHandle.CFrame.LookVector * Tool:GetAttribute("Knockback")
+							BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback")
 							BV.Parent = HitRootPart
 							Debris:AddItem(BV, 0.1)
 
