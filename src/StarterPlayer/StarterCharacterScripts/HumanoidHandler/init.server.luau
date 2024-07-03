@@ -8,7 +8,6 @@ local RunService = game:GetService("RunService")
 
 local Character = script:FindFirstAncestorOfClass("Model")
 local Humanoid: Humanoid = Character:WaitForChild("Humanoid")
-local RootPart: BasePart = Character:WaitForChild("HumanoidRootPart")
 
 repeat task.wait()
 until Humanoid:GetAttribute("Stamina") ~= nil
@@ -21,15 +20,10 @@ local StaminaSkipCheck = false
 local MaxStaminaCanRegen = false
 local MaxStaminaSkipCheck = false
 
-local MaxSpeed = 16
-
 local DefMaxStamina = Humanoid:GetAttribute("MaxStamina")
 local DefMaxHealth = Humanoid.MaxHealth
 
 Humanoid:SetAttribute("DefMaxHealth", DefMaxHealth)
-
-local LastHP = Humanoid.MaxHealth
-local HPRange = 10
 
 local StaminaRegenMultiplier = 1
 

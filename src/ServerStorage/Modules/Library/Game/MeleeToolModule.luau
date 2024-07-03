@@ -1,5 +1,3 @@
-local CollectionService = game:GetService("CollectionService")
-local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
@@ -7,6 +5,7 @@ local RunService = game:GetService("RunService")
 
 local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
 local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
+local TagModule = require(ReplicatedStorage.Modules.Miscellaneous.TagSystem)
 
 local CMTF = require(script.Parent.CommonToolFunctions)
 local MeleeModule = require(script.Parent.MeleeModule)
@@ -47,9 +46,10 @@ function MeleeToolModule.Load(Tool: Tool)
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
 		Humanoid = Character:WaitForChild("Humanoid")
-		Animator = Humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", Humanoid)
+		Animator = Humanoid:FindFirstChildOfClass("Animator")
 		RootPart = Character:WaitForChild("HumanoidRootPart")
 		Player = Players:GetPlayerFromCharacter(Character)
+		Animator.Parent = Humanoid
 
 		Humanoid:SetAttribute("Guard", false)
 
@@ -122,11 +122,11 @@ function MeleeToolModule.Load(Tool: Tool)
 							continue
 						end
 
-						if Object:IsA("BasePart") and Object.Name == "Sheath_Handle" then
+						if Object == SheathHandle then
 							Object.Weld.Part1 = nil
 						end
 
-						if Object.Name == "Weapon_Handle" and Object:IsA("Motor6D") then
+						if Object.Name == "Weapon_Handle" and Object:IsA("Motor6D") --[[and Object:IsDescendantOf(SheathHandle)]] then
 							Object.Part0 = Character[tostring(...)]
 						end
 					end
@@ -277,7 +277,10 @@ function MeleeToolModule.Load(Tool: Tool)
 				NewHitbox.OnHit:Connect(
 					function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
 						local function Damage()
-							HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") or 20)
+							local DamageAmount = Tool:GetAttribute("Damage") or 20
+
+							HitHumanoid:TakeDamage(DamageAmount)
+							TagModule.Tag(HitCharacter, Character, DamageAmount)
 
 							ReplicatedStorage.Remotes.Effects:FireAllClients(
 								"Game",
@@ -381,7 +384,8 @@ function MeleeToolModule.Load(Tool: Tool)
 									local AnimationObject = ReturnAnimations[math.random(#ReturnAnimations)]
 
 									local HitAnimator = HitHumanoid:FindFirstChildOfClass("Animator")
-										or Instance.new("Animator", HitHumanoid)
+										or Instance.new("Animator")
+										HitAnimator.Parent = HitHumanoid
 
 									if AnimationObject and AnimationObject.AnimationId ~= "" then
 										local EvadeAnimation = HitAnimator:LoadAnimation(AnimationObject)
@@ -472,12 +476,13 @@ function MeleeToolModule.Load(Tool: Tool)
 				NewHitbox.Lifetime = 0.1
 
 				NewHitbox.OnHit:Connect(
-					function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart, HitPart: BasePart)
+					function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart)
 						local Status =
 							CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
 
 						local function Damage()
 							HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
+							TagModule.Tag(HitCharacter, Character, Tool:GetAttribute("Damage") * 0.3)
 
 							if HitHumanoid.Health - Tool:GetAttribute("Damage") * 0.3 <= 0 then
 								HitHumanoid.Health = 1

@@ -34,8 +34,8 @@ function Effects.Hitbox(CFrame : CFrame, Size : Vector3)
     Visual.CFrame = CFrame
     Visual.Size = Size
     Visual.Material = Enum.Material.Neon
-    Visual.Transparency = 0.8
-    Visual.Color = Color3.fromRGB(255, 0, 4)
+    Visual.Transparency = 0.75
+    Visual.Color = Color3.fromRGB(92, 145, 255)
     Visual.Parent = workspace.Visuals
 
     Debris:AddItem(Visual, 0.1)
