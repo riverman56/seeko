@@ -3,7 +3,7 @@ local Controls = {
 	["Block"] = Enum.UserInputType.MouseButton2,
 	["Guardbreak"] = Enum.KeyCode.Q,
 	["ShiftLock"] = Enum.KeyCode.LeftAlt,
-	["Run"] = Enum.KeyCode.LeftControl,
+	["Run"] = Enum.KeyCode.LeftShift,
 }
 
 return Controls

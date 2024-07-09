@@ -1,7 +1,13 @@
 task.wait(1)
 
+local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local Player = Players.LocalPlayer
+
+local PlayerControls = require(ReplicatedStorage.Modules.Gameplay.PlayerControls)
 
 local function ChangeLighting(Configuration: Configuration)
     if Configuration == nil then
@@ -53,6 +59,23 @@ end
 
 local AmbientSound_Manager = require(ReplicatedStorage:WaitForChild("AmbientSound_Manager"))
 AmbientSound_Manager.Run()
+
+task.defer(function()
+	local BoundKeys = Player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule").CameraModule.MouseLockController:WaitForChild("BoundKeys")
+	local CurrentKeys = "LeftAlt"
+
+	coroutine.wrap(function()
+		RunService:BindToRenderStep("ShiftLock", Enum.RenderPriority.Camera.Value + 10, function()
+			if PlayerControls["ShiftLock"].Name ~= CurrentKeys then
+				CurrentKeys = PlayerControls["ShiftLock"].Name
+			end
+
+			if BoundKeys.Value ~= CurrentKeys then
+				BoundKeys.Value = CurrentKeys
+			end
+		end)
+	end)()
+end)
 
 ChangeLighting(Lighting.CurrentAtmosphere.Value)
 
