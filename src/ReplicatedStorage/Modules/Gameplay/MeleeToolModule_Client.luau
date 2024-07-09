@@ -83,7 +83,8 @@ function MeleeToolModule.Load(Tool: Tool)
 			UserInputService.MouseIconEnabled = false
 		end
 
-		local Animator = Humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", Humanoid)
+		local Animator = Humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+		Animator.Parent = Humanoid
 
 		if Loaded == false then
 			Loaded = true
@@ -217,7 +218,7 @@ function MeleeToolModule.Load(Tool: Tool)
 					StrikeOrder = 1
 				end
 
-				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function(...)
+				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
 					CommonFunctions.PlayRandomSound(
 						Tool.SFX,
 						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
@@ -232,7 +233,7 @@ function MeleeToolModule.Load(Tool: Tool)
 					end
 				end)
 
-				AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function(...)
+				AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
 					Tool:SetAttribute("Debounce_Attack", false)
 					AttackDebounce = false
 
