@@ -101,7 +101,7 @@ RunService.Heartbeat:Connect(function()
     -- end
 
     if Humanoid:GetAttribute("Running") == true then
-        Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - 0.35, 0, DefMaxStamina))
+        Humanoid:SetAttribute("Stamina", math.clamp(Humanoid:GetAttribute("Stamina") - 0.175, 0, DefMaxStamina))
     end
 
     if os.clock() - LastTick >= 0.05 then

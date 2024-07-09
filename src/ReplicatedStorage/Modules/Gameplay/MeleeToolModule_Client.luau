@@ -7,6 +7,7 @@ local Player = Players.LocalPlayer
 local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
 local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
 local MeleeModule = require(script.Parent.MeleeModule_Client)
+local PlayerControls = require(ReplicatedStorage.Modules.Gameplay.PlayerControls)
 
 local MeleeToolModule = {}
 
@@ -173,7 +174,7 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if
-				Input.UserInputType == Enum.UserInputType.MouseButton1
+				(Input.KeyCode == PlayerControls["Attack"] or Input.UserInputType == PlayerControls["Attack"] or Input.KeyCode == Enum.KeyCode.ButtonR2)
 				and Humanoid:GetAttribute("Stamina") >= Tool:GetAttribute("StaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and AttackDebounce == false
@@ -248,7 +249,7 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if
-				Input.UserInputType == Enum.UserInputType.MouseButton2
+				(Input.UserInputType == PlayerControls["Block"] or Input.KeyCode == PlayerControls["Block"] or Input.KeyCode == Enum.KeyCode.ButtonL2)
 				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardStaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and Humanoid:GetAttribute("Guard") == false
@@ -268,7 +269,7 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if
-				Input.KeyCode == Enum.KeyCode.Q
+				(Input.UserInputType == PlayerControls["Guardbreak"] or Input.KeyCode == PlayerControls["Guardbreak"] or Input.KeyCode == Enum.KeyCode.ButtonX)
 				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardBreakStaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and Tool:GetAttribute("Debounce_GuardBreak") == false
@@ -328,7 +329,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if Input.UserInputType == Enum.UserInputType.MouseButton2 then
+			if Input.UserInputType == PlayerControls["Block"] or Input.KeyCode == PlayerControls["Block"] or Input.KeyCode == Enum.KeyCode.ButtonL2 then
 				if Guarding == true and Equipped == true then
 					Tool.Remotes.Guard:FireServer(false)
 					Guarding = false
