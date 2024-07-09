@@ -289,6 +289,7 @@ function MeleeToolModule.Load(Tool: Tool)
 								Tool:GetAttribute("Damage") or 20
 							)
 							ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
+							ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "Hitmarker")
 
 							local BV = Instance.new("BodyVelocity")
 							BV.MaxForce = Vector3.new(math.huge, 0, math.huge)

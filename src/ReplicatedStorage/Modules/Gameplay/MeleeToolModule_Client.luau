@@ -76,10 +76,10 @@ function MeleeToolModule.Load(Tool: Tool)
 		NewJanitor:LinkToInstances(Character, Tool)
 
 		if
-			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible == false
+			Player.PlayerGui.Crosshair.Frame.Crosshair.Visible == false
 			and UserInputService.MouseIconEnabled == true
 		then
-			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible = true
+			Player.PlayerGui.Crosshair.Frame.Crosshair.Visible = true
 			UserInputService.MouseIconEnabled = false
 		end
 
@@ -132,10 +132,10 @@ function MeleeToolModule.Load(Tool: Tool)
 		end
 
 		if
-			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible == true
+			Player.PlayerGui.Crosshair.Frame.Crosshair.Visible == true
 			and UserInputService.MouseIconEnabled == false
 		then
-			Player.PlayerGui.UserInterface.Menus.Crosshair.Visible = false
+			Player.PlayerGui.Crosshair.Frame.Crosshair.Visible = false
 			UserInputService.MouseIconEnabled = true
 		end
 
@@ -175,7 +175,11 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if
-				(Input.KeyCode == PlayerControls["Attack"] or Input.UserInputType == PlayerControls["Attack"] or Input.KeyCode == Enum.KeyCode.ButtonR2)
+				(
+					Input.KeyCode == PlayerControls["Attack"]
+					or Input.UserInputType == PlayerControls["Attack"]
+					or Input.KeyCode == Enum.KeyCode.ButtonR2
+				)
 				and Humanoid:GetAttribute("Stamina") >= Tool:GetAttribute("StaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and AttackDebounce == false
@@ -250,7 +254,11 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if
-				(Input.UserInputType == PlayerControls["Block"] or Input.KeyCode == PlayerControls["Block"] or Input.KeyCode == Enum.KeyCode.ButtonL2)
+				(
+					Input.UserInputType == PlayerControls["Block"]
+					or Input.KeyCode == PlayerControls["Block"]
+					or Input.KeyCode == Enum.KeyCode.ButtonL2
+				)
 				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardStaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and Humanoid:GetAttribute("Guard") == false
@@ -270,7 +278,11 @@ function MeleeToolModule.Load(Tool: Tool)
 			end
 
 			if
-				(Input.UserInputType == PlayerControls["Guardbreak"] or Input.KeyCode == PlayerControls["Guardbreak"] or Input.KeyCode == Enum.KeyCode.ButtonX)
+				(
+					Input.UserInputType == PlayerControls["Guardbreak"]
+					or Input.KeyCode == PlayerControls["Guardbreak"]
+					or Input.KeyCode == Enum.KeyCode.ButtonX
+				)
 				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardBreakStaminaCost")
 				and Tool:GetAttribute("Debounce_Attack") == false
 				and Tool:GetAttribute("Debounce_GuardBreak") == false
@@ -330,7 +342,11 @@ function MeleeToolModule.Load(Tool: Tool)
 				return
 			end
 
-			if Input.UserInputType == PlayerControls["Block"] or Input.KeyCode == PlayerControls["Block"] or Input.KeyCode == Enum.KeyCode.ButtonL2 then
+			if
+				Input.UserInputType == PlayerControls["Block"]
+				or Input.KeyCode == PlayerControls["Block"]
+				or Input.KeyCode == Enum.KeyCode.ButtonL2
+			then
 				if Guarding == true and Equipped == true then
 					Tool.Remotes.Guard:FireServer(false)
 					Guarding = false

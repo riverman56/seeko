@@ -4,11 +4,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Assets = ReplicatedStorage.Assets
-local Modules = ReplicatedStorage.Modules
 
 local Library = Assets.Library
 
 local Player = Players.LocalPlayer
+
+local HitmarkerInfo = TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local DamageIndicatorTween = TweenInfo.new(0.75, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 local OtherIndicatorTween = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.In)
@@ -82,6 +83,22 @@ function Effects.DamageHighlight(Character : Model)
     TweenService:Create(NewHighlight, DamageHighlightTween, {FillTransparency = 1}):Play()
 
     Debris:AddItem(NewHighlight, DamageHighlightTween.Time + 0.1)
+end
+
+function Effects.Hitmarker()
+    print("Hitmarker")
+
+    local Gui = Player.PlayerGui.Crosshair.Frame
+
+    local Crosshair = Gui.Crosshair
+    local Hitmarker = Crosshair.Hitmarker
+
+    Hitmarker.Rotation = math.random(-15, 15)
+    Hitmarker.ImageTransparency = 0
+
+    task.wait(0.1)
+
+    TweenService:Create(Hitmarker, HitmarkerInfo, {ImageTransparency = 1}):Play()
 end
 
 return Effects

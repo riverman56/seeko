@@ -17,7 +17,7 @@ local SpeedBoost = 5
 local RunCycle = Animator:LoadAnimation(ReplicatedStorage.Assets.Animations.RunCycle)
 
 local function RunStart()
-    if Running == true or Humanoid:GetState() == Enum.HumanoidStateType.Dead or Humanoid:GetAttribute("Stamina") <= 100 then
+    if Running == true or Humanoid:GetState() == Enum.HumanoidStateType.Dead or Humanoid:GetAttribute("Stamina") <= 100 or Character:FindFirstChildOfClass("Tool") ~= nil then
         return
     end
 
