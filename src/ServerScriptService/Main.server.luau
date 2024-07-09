@@ -105,7 +105,7 @@ local function HandleCharacterSpawn(Player: Player)
 
 		local Tags = Character.TagFolder:GetChildren()
 
-		local DivideBy = math.clamp(#Tags - 2, 1, math.huge)
+		local _DivideBy = math.clamp(#Tags - 2, 1, math.huge)
 
 		for _, Tag in Tags do
 			if not Tag:IsA("ObjectValue") then

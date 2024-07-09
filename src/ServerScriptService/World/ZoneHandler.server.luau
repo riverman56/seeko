@@ -2,7 +2,7 @@ local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Zone = require(ReplicatedStorage.Zone)
+local Zone = require(ReplicatedStorage.Packages.Zone)
 
 local Zones = Workspace:WaitForChild("Zones")
 
