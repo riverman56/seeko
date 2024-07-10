@@ -31,6 +31,9 @@
     "ServerStorage": {
       "Modules": {
         "$path": "src/ServerStorage/Modules"
+      },
+      "Packages": {
+        "$path": "ServerPackages"
       }
     }
   }
