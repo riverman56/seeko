@@ -17,7 +17,8 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 		BackgroundColor3 = if isSelected then Color3.fromRGB(18, 18, 18) else Color3.fromRGB(31, 31, 31),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		BorderSizePixel = 0,
-		[React.Event.Activated] = function()
+		AutoButtonColor = false,
+		[React.Event.MouseButton1Click] = function()
 			producer.setSelectedItem(if isSelected then nil else id)
 		end,
 	}, {

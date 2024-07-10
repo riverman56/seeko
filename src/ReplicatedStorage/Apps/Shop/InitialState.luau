@@ -28,8 +28,7 @@ local InitialState = {
 			cost = 1000,
 		},
 	},
-	limitedDecks = {},
-	limitedItems = {},
+	limited = {},
 }
 
 return InitialState

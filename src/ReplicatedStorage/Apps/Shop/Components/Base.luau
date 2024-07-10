@@ -20,7 +20,10 @@ local function Base()
 
 	local decks = {}
 	for id, deck in decksState do
-		table.insert(decks, GridItem(deck.name, deck.cost, id))
+		table.insert(
+			decks,
+			Item(deck.name, deck.cost, id, ReplicatedStorage.Assets.Models.Decks:FindFirstChild(deck.name))
+		)
 	end
 
 	return React.createElement("Frame", {
@@ -108,7 +111,7 @@ local function Base()
 						Selectable = false,
 						Size = UDim2.fromScale(0, 1),
 						[React.Event.Activated] = function()
-							print("yo")
+							producer.setSelectedItem(nil)
 							producer.setSelectedCategory("Decks")
 						end,
 					}, {
@@ -143,7 +146,7 @@ local function Base()
 						Selectable = false,
 						Size = UDim2.fromScale(0, 1),
 						[React.Event.Activated] = function()
-							print("yo2")
+							producer.setSelectedItem(nil)
 							producer.setSelectedCategory("Limited")
 						end,
 					}, {
@@ -205,6 +208,8 @@ local function Base()
 				FillDirection = Enum.FillDirection.Horizontal,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 			}),
+
+			React.createElement(React.Fragment, nil, decks),
 		}),
 
 		React.createElement("ScrollingFrame", {
@@ -252,8 +257,6 @@ local function Base()
 					CellSize = UDim2.fromOffset(109, 109),
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
-
-				React.createElement(React.Fragment, nil, decks),
 			}),
 		}),
 

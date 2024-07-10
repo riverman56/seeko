@@ -1,4 +1,4 @@
-local function setSelectedItem(state, item: string)
+local function setSelectedItem(state, item: string?)
 	local nextState = table.clone(state)
 	nextState.selectedItem = item
 

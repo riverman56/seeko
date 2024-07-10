@@ -91,6 +91,7 @@ local function Description()
 				BorderColor3 = Color3.fromRGB(0, 0, 0),
 				BorderSizePixel = 0,
 				Selectable = false,
+				AutoButtonColor = false,
 				Size = UDim2.fromOffset(144, 36),
 			}, {
 				React.createElement("UICorner"),
