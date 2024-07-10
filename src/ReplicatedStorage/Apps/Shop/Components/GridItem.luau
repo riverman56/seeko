@@ -1,17 +1,24 @@
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
+local ReactReflex = require(Packages.ReactReflex)
 
-local function GridItem(name: string, cost: number, displayModel: Model)
-	local isSelected, setIsSelected = React.useState(false)
+local function GridItem(name: string, cost: number, id: number, displayModel: Model?)
+	local producer = ReactReflex.useProducer()
+	local selectedItem = ReactReflex.useSelector(function(state)
+		return state.shop.selectedItem
+	end)
+
+	local isSelected = selectedItem == id
 
 	return React.createElement("ImageButton", {
 		BackgroundColor3 = if isSelected then Color3.fromRGB(18, 18, 18) else Color3.fromRGB(31, 31, 31),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		BorderSizePixel = 0,
 		[React.Event.Activated] = function()
-			setIsSelected(not isSelected)
+			producer.setSelectedItem(if isSelected then nil else id)
 		end,
 	}, {
 		React.createElement("UICorner"),

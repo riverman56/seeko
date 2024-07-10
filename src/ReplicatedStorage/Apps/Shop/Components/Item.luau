@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 
-local function Item(name: string, cost: number, displayModel: Model)
+local function Item(name: string, cost: number, displayModel: Model?)
 	local isSelected, setIsSelected = React.useState(false)
 
 	return React.createElement("ImageButton", {

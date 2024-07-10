@@ -4,12 +4,24 @@ local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 local ReactReflex = require(Packages.ReactReflex)
 
-local shopRoot = script.Parent.Parent
-
-local RootProducer = require(shopRoot.Parent.RootProducer)
+local Description = require(script.Parent.Description)
+local Item = require(script.Parent.Item)
+local GridItem = require(script.Parent.GridItem)
 
 local function Base()
 	local producer = ReactReflex.useProducer()
+	local selectedCategory = ReactReflex.useSelector(function(state)
+		return state.shop.selectedCategory
+	end)
+
+	local decksState = ReactReflex.useSelector(function(state)
+		return state.shop.decks
+	end)
+
+	local decks = {}
+	for id, deck in decksState do
+		table.insert(decks, GridItem(deck.name, deck.cost, id))
+	end
 
 	return React.createElement("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -19,6 +31,8 @@ local function Base()
 		Position = UDim2.fromScale(0.499, 0.499),
 		Size = UDim2.fromOffset(756, 416),
 	}, {
+		React.createElement(Description),
+
 		React.createElement("UICorner"),
 
 		React.createElement("Frame", {
@@ -80,10 +94,11 @@ local function Base()
 							Enum.FontStyle.Normal
 						),
 						Text = "Decks",
-						TextColor3 = Color3.fromRGB(255, 255, 255),
+						TextColor3 = if selectedCategory == "Decks"
+							then Color3.fromRGB(255, 255, 255)
+							else Color3.fromRGB(136, 137, 139),
 						TextSize = 14,
 						TextXAlignment = Enum.TextXAlignment.Left,
-						Active = false,
 						AutomaticSize = Enum.AutomaticSize.X,
 						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 						BackgroundTransparency = 1,
@@ -93,8 +108,19 @@ local function Base()
 						Selectable = false,
 						Size = UDim2.fromScale(0, 1),
 						[React.Event.Activated] = function()
+							print("yo")
 							producer.setSelectedCategory("Decks")
 						end,
+					}, {
+						React.createElement("Frame", {
+							AnchorPoint = Vector2.new(0.5, 0.5),
+							BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+							BorderColor3 = Color3.fromRGB(0, 0, 0),
+							BorderSizePixel = 0,
+							Position = UDim2.fromScale(0.5, 1),
+							Size = UDim2.fromOffset(30, 2),
+							Visible = selectedCategory == "Decks",
+						}),
 					}),
 
 					React.createElement("TextButton", {
@@ -104,10 +130,11 @@ local function Base()
 							Enum.FontStyle.Normal
 						),
 						Text = "Limited",
-						TextColor3 = Color3.fromRGB(136, 137, 139),
+						TextColor3 = if selectedCategory == "Limited"
+							then Color3.fromRGB(255, 255, 255)
+							else Color3.fromRGB(136, 137, 139),
 						TextSize = 14,
 						TextXAlignment = Enum.TextXAlignment.Left,
-						Active = false,
 						AutomaticSize = Enum.AutomaticSize.X,
 						BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 						BackgroundTransparency = 1,
@@ -116,22 +143,24 @@ local function Base()
 						Selectable = false,
 						Size = UDim2.fromScale(0, 1),
 						[React.Event.Activated] = function()
+							print("yo2")
 							producer.setSelectedCategory("Limited")
 						end,
+					}, {
+						React.createElement("Frame", {
+							AnchorPoint = Vector2.new(0.5, 0.5),
+							BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+							BorderColor3 = Color3.fromRGB(0, 0, 0),
+							BorderSizePixel = 0,
+							Position = UDim2.fromScale(0.5, 1),
+							Size = UDim2.fromOffset(30, 2),
+							Visible = selectedCategory == "Limited",
+						}),
 					}),
 				}),
 
 				React.createElement("UIPadding", {
 					PaddingRight = UDim.new(0, 32),
-				}),
-
-				React.createElement("Frame", {
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-					BorderColor3 = Color3.fromRGB(0, 0, 0),
-					BorderSizePixel = 0,
-					Position = UDim2.fromOffset(311, 28),
-					Size = UDim2.fromOffset(30, 2),
 				}),
 			}),
 
@@ -163,6 +192,7 @@ local function Base()
 			Selectable = false,
 			Size = UDim2.new(1, 0, 1, -28),
 			SelectionGroup = false,
+			Visible = selectedCategory == "Decks",
 		}, {
 			React.createElement("UIPadding", {
 				PaddingBottom = UDim.new(0, 12),
@@ -191,7 +221,7 @@ local function Base()
 			Position = UDim2.fromScale(0.5, 1),
 			Selectable = false,
 			Size = UDim2.new(1, 0, 1, -28),
-			Visible = false,
+			Visible = selectedCategory == "Limited",
 			SelectionGroup = false,
 		}, {
 			React.createElement("UIPadding", {
@@ -222,6 +252,8 @@ local function Base()
 					CellSize = UDim2.fromOffset(109, 109),
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
+
+				React.createElement(React.Fragment, nil, decks),
 			}),
 		}),
 

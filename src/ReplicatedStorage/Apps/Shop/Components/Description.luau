@@ -2,13 +2,25 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
+local ReactReflex = require(Packages.ReactReflex)
 
 local function Description()
+	local producer = ReactReflex.useProducer()
+
+	local selectedItem = ReactReflex.useSelector(function(state)
+		return state.shop.selectedItem
+	end)
+
+	local decksState = ReactReflex.useSelector(function(state)
+		return state.shop.decks
+	end)
+
 	return React.createElement("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = Color3.fromRGB(20, 21, 21),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		BorderSizePixel = 0,
+		Visible = selectedItem ~= nil,
 		Position = UDim2.fromScale(1.24, 0.499),
 		Size = UDim2.fromOffset(291, 416),
 	}, {
@@ -23,9 +35,9 @@ local function Description()
 		}, {
 			React.createElement("TextLabel", {
 				FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.ExtraBold, Enum.FontStyle.Normal),
-				Text = "Item",
+				Text = if selectedItem then decksState[selectedItem].name else "Item",
 				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextSize = 36,
+				TextSize = 26,
 				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BackgroundTransparency = 1,
 				BorderColor3 = Color3.fromRGB(0, 0, 0),
@@ -119,36 +131,6 @@ local function Description()
 			BorderSizePixel = 0,
 			Position = UDim2.fromScale(0.5, 0.476),
 			Size = UDim2.new(1, 0, 0.192, 72),
-		}, {
-			React.createElement("Model", {
-				WorldPivot = CFrame.new(-79.9385071, 7.44753599, 51.2520256, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-			}, {
-				React.createElement("MeshPart", {
-					Anchored = true,
-					BrickColor = BrickColor.new("Really black"),
-					CFrame = CFrame.new(-80.0892792, 7.44756889, 51.2520256, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-					Color = Color3.fromRGB(0, 0, 0),
-					PivotOffset = CFrame.new(
-						0.036049936,
-						-0.0337679237,
-						0.00675388658,
-						1,
-						-3.45509528e-23,
-						-2.44929344e-16,
-						-2.44929344e-16,
-						-2.82129974e-07,
-						-1,
-						-3.45509528e-23,
-						1,
-						-2.82129974e-07
-					),
-					Size = Vector3.new(0.223, 5.37, 3.78),
-				}, {
-					React.createElement("SurfaceAppearance"),
-
-					React.createElement("LocalScript"),
-				}),
-			}),
 		}),
 
 		React.createElement("Frame", {
@@ -186,7 +168,7 @@ local function Description()
 
 			React.createElement("TextLabel", {
 				FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.ExtraBold, Enum.FontStyle.Normal),
-				Text = "1,000",
+				Text = if selectedItem then tostring(decksState[selectedItem].cost) else 0,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextSize = 20,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -207,4 +189,4 @@ local function Description()
 	})
 end
 
-return Description()
+return Description

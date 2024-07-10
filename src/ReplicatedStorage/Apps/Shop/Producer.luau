@@ -6,12 +6,14 @@ local Reflex = require(Packages.Reflex)
 local Actions = script.Parent.Actions
 local setSelectedCategory = require(Actions.setSelectedCategory)
 local setSelectedItem = require(Actions.setSelectedItem)
+local setIsOpen = require(Actions.setIsOpen)
 
 local InitialState = require(script.Parent.InitialState)
 
 local producer = Reflex.createProducer(InitialState, {
 	setSelectedCategory = setSelectedCategory,
 	setSelectedItem = setSelectedItem,
+	setIsOpen = setIsOpen,
 })
 
 return producer
