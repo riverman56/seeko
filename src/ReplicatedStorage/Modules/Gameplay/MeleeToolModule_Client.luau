@@ -33,6 +33,10 @@ function MeleeToolModule.Load(Tool: Tool)
 
 	local Animations
 
+	local RemotesFolder = Tool:WaitForChild("Remotes")
+	local AnimationsFolder = Tool:WaitForChild("Animations")
+	local SFXFolder = Tool:WaitForChild("SFX")
+
 	local function GetRandomAnimation(Name: string, DontRepeat: boolean?)
 		local ReturnAnimations = {}
 
@@ -88,7 +92,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 		if Loaded == false then
 			Loaded = true
-			Animations = MeleeModule:LoadAnimations(Animator, Tool.Animations)
+			Animations = MeleeModule:LoadAnimations(Animator, AnimationsFolder)
 		end
 
 		Guarding = false
@@ -224,11 +228,11 @@ function MeleeToolModule.Load(Tool: Tool)
 
 				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
 					CommonFunctions.PlayRandomSound(
-						Tool.SFX,
+						SFXFolder,
 						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
 						RootPart
 					)
-					Tool.Remotes.Attack:FireServer(AttackAnimation.Animation)
+					RemotesFolder.Attack:FireServer(AttackAnimation.Animation)
 
 					for _, Object in Character:GetDescendants() do
 						if Object:IsA("Trail") and Object:GetAttribute("StrikeEnable") ~= nil then
@@ -272,7 +276,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 				LastGuard = os.clock()
 
-				Tool.Remotes.Guard:FireServer(true)
+				RemotesFolder.Guard:FireServer(true)
 
 				Guarding = true
 			end
@@ -311,11 +315,11 @@ function MeleeToolModule.Load(Tool: Tool)
 
 				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
 					CommonFunctions.PlayRandomSound(
-						Tool.SFX,
+						SFXFolder,
 						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
 						RootPart
 					)
-					Tool.Remotes.Attack:FireServer(AttackAnimation.Animation)
+					RemotesFolder.Attack:FireServer(AttackAnimation.Animation)
 				end)
 
 				AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
@@ -348,7 +352,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				or Input.KeyCode == Enum.KeyCode.ButtonL2
 			then
 				if Guarding == true and Equipped == true then
-					Tool.Remotes.Guard:FireServer(false)
+					RemotesFolder.Guard:FireServer(false)
 					Guarding = false
 				end
 			end
