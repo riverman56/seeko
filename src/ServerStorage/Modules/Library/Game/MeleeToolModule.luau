@@ -423,7 +423,7 @@ function MeleeToolModule.Load(Tool: Tool)
 									end)
 
 									task.delay(0.1, function()
-										CommonFunctions.PlayRandomSound(HitSFXFolder, "SFX_Block", HitRootPart)
+										CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
 									end)
 								else
 									Damage()

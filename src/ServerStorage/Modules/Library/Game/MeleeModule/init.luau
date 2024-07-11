@@ -1,5 +1,3 @@
-local CMTF = require(script.Parent.CommonToolFunctions)
-
 local MeleeModule = {}
 
 local WhitelistedAnimations = {
