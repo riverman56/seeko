@@ -6,6 +6,10 @@ local ReactReflex = require(Packages.ReactReflex)
 
 local ViewportCamera = ReplicatedStorage:WaitForChild("ViewportCamera")
 
+local CircleElement = require(script.Parent.Animations.Circle)
+
+local formatCurrency = require(ReplicatedStorage.Utilities.formatCurrency)
+
 local function Item(name: string, cost: number, id: number, displayModel: Model)
 	local producer = ReactReflex.useProducer()
 	local selectedItem = ReactReflex.useSelector(function(state)
@@ -13,6 +17,8 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 	end)
 
 	local viewportRef = React.useRef(nil)
+
+	local ShowCircle, SetShowCicle = React.useState(false)
 
 	React.useEffect(function()
 		if not viewportRef.current:FindFirstChildOfClass("Model") then
@@ -22,6 +28,8 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 
 	local isSelected = selectedItem == id
 
+	local koCost = formatCurrency(cost) or "N/A"
+
 	return React.createElement("ImageButton", {
 		BackgroundColor3 = if isSelected then Color3.fromRGB(18, 18, 18) else Color3.fromRGB(31, 31, 31),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
@@ -30,6 +38,7 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 		Size = UDim2.new(0, 256, 1, 0),
 		[React.Event.MouseButton1Click] = function()
 			producer.setSelectedItem(if isSelected then nil else id)
+			SetShowCicle(true)
 		end,
 	}, {
 		React.createElement("UICorner"),
@@ -37,6 +46,8 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 		React.createElement("UIStroke", {
 			Color = if isSelected then Color3.fromRGB(159, 159, 159) else Color3.fromRGB(74, 75, 75),
 		}),
+
+		if ShowCircle then React.createElement(CircleElement) else nil,
 
 		React.createElement("TextLabel", {
 			FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
@@ -112,7 +123,7 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 
 			React.createElement("TextLabel", {
 				FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.ExtraBold, Enum.FontStyle.Normal),
-				Text = tostring(cost),
+				Text = koCost,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextSize = 14,
 				TextXAlignment = Enum.TextXAlignment.Left,

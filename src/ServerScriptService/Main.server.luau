@@ -1,8 +1,5 @@
-task.wait()
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
 local RunService = game:GetService("RunService")
 
 local Attributes = {
@@ -26,8 +23,6 @@ local JanitorStorage = {}
 local CharacterJanitorStuff = {}
 
 local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
-
-local ProfileHandler = require(ServerStorage.Modules.Data.ProfileHandler)
 
 -- Debugging Handle stuff, only for studio
 for _, Object in game:GetDescendants() do
@@ -161,29 +156,10 @@ local function HandleCharacterSpawn(Player: Player)
 end
 
 local function HandlePlayerAdded(Player: Player)
-	local PlayerProfile = ProfileHandler.Add(Player)
-
-	if not PlayerProfile then
-		Player:Kick("Could not retrieve Profile")
-		return
-	end
-
 	-- Flush out old or outdated values and add new ones if required
 	task.defer(function()
 		for AttributeName, AttributeValue in Attributes.Player do
 			Player:SetAttribute(AttributeName, AttributeValue)
-		end
-
-		for Index, Value in ProfileHandler.DefaultData do
-			if not PlayerProfile.Data[Index] then
-				PlayerProfile.Data[Index] = Value
-			end
-		end
-
-		for Name, _ in PlayerProfile.Data do
-			if not ProfileHandler.DefaultData[Name] then
-				PlayerProfile.Data[Name] = nil
-			end
 		end
 	end)
 
@@ -223,8 +199,6 @@ local function HandlePlayerRemoving(Player: Player)
 		PlayerJanitor:Destroy()
 		PlayerJanitor = nil
 	end
-
-	ProfileHandler.Remove(Player)
 end
 
 for _, Player in Players:GetPlayers() do

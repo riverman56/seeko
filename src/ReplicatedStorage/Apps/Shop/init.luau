@@ -9,7 +9,7 @@ local ReactRoblox = require(Packages.ReactRoblox)
 local Components = script.Components
 local Base = require(Components.Base)
 
-local RootProducer = require(script.Parent.RootProducer)
+local rootProducer = require(ReplicatedStorage.Shared.RootProducer)
 
 --[[local app = ReactReflex.ReflexProvider({
 	producer = RootProducer,
@@ -23,7 +23,7 @@ local RootProducer = require(script.Parent.RootProducer)
 })]]
 
 local app = React.createElement(ReactReflex.ReflexContext.Provider, {
-	value = RootProducer,
+	value = rootProducer,
 }, {
 	React.createElement("ScreenGui", {
 		ResetOnSpawn = false,

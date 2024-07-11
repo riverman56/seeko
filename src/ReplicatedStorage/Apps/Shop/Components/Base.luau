@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
@@ -8,6 +9,8 @@ local Description = require(script.Parent.Description)
 local Item = require(script.Parent.Item)
 local GridItem = require(script.Parent.GridItem)
 
+local formatCurrency = require(ReplicatedStorage.Utilities.formatCurrency)
+
 local function Base()
 	local producer = ReactReflex.useProducer()
 	local selectedCategory = ReactReflex.useSelector(function(state)
@@ -17,6 +20,12 @@ local function Base()
 	local decksState = ReactReflex.useSelector(function(state)
 		return state.shop.decks
 	end)
+
+	local playerData = ReactReflex.useSelector(function(state)
+		return state.playerData[Players.LocalPlayer.Name]
+	end)
+
+	local ko = if playerData then formatCurrency(playerData.ko) else "N/A"
 
 	local decks = {}
 	for id, deck in decksState do
@@ -309,7 +318,7 @@ local function Base()
 
 			React.createElement("TextLabel", {
 				FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.ExtraBold, Enum.FontStyle.Normal),
-				Text = "4,618",
+				Text = ko,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextSize = 14,
 				TextXAlignment = Enum.TextXAlignment.Left,

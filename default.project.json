@@ -8,6 +8,7 @@
     },
 
     "ServerScriptService": {
+      "$ignoreUnknownInstances": true,
       "$path": "src/ServerScriptService"
     },
 
@@ -31,6 +32,9 @@
     "ServerStorage": {
       "Modules": {
         "$path": "src/ServerStorage/Modules"
+      },
+      "Data": {
+        "$path": "src/ServerStorage/Data"
       },
       "Packages": {
         "$path": "ServerPackages"

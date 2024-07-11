@@ -1,9 +1,15 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Lapis = require(ServerStorage.Packages.Lapis)
+local Reflex = require(ReplicatedStorage.Packages.Reflex)
 
-local DEFAULT_DATA = { coins = 100 }
+local remotes = require(ReplicatedStorage.Shared.remotes)
+local sharedProducers = require(ReplicatedStorage.Shared.SharedProducers)
+local rootProducer = require(ServerStorage.Data.RootProducer)
+
+local DEFAULT_DATA = { ko = 0 }
 
 local collection = Lapis.createCollection("PlayerData", {
 	defaultData = DEFAULT_DATA,
@@ -25,6 +31,7 @@ local function onPlayerAdded(player: Player)
 			end
 
 			documents[player] = document
+			rootProducer.setPlayerData(player.Name, document:read())
 		end)
 		:catch(function(message)
 			warn(`Player {player.Name}'s data failed to load: {message}`)
@@ -50,3 +57,24 @@ Players.PlayerRemoving:Connect(onPlayerRemoving)
 for _, player in Players:GetPlayers() do
 	onPlayerAdded(player)
 end
+
+-- sync
+local broadcaster = Reflex.createBroadcaster({
+	producers = sharedProducers,
+	dispatch = function(player, actions)
+		remotes.dispatch:fire(player, actions)
+	end,
+	beforeDispatch = function(player, action)
+		-- the player only receives their own data and no one else's
+		if action.name == "setPlayerData" and action.arguments[1] ~= player.Name then
+			return
+		end
+		return action
+	end,
+})
+
+remotes.start:connect(function(player)
+	broadcaster:start(player)
+end)
+
+rootProducer:applyMiddleware(broadcaster.middleware)

@@ -1,9 +1,10 @@
-local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 local ReactReflex = require(Packages.ReactReflex)
+
+local formatCurrency = require(ReplicatedStorage.Utilities.formatCurrency)
 
 local function GridItem(name: string, cost: number, id: number, displayModel: Model?)
 	local producer = ReactReflex.useProducer()
@@ -12,6 +13,8 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 	end)
 
 	local isSelected = selectedItem == id
+
+	local koCost = formatCurrency(cost) or "N/A"
 
 	return React.createElement("ImageButton", {
 		BackgroundColor3 = if isSelected then Color3.fromRGB(18, 18, 18) else Color3.fromRGB(31, 31, 31),
@@ -119,7 +122,7 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 
 			React.createElement("TextLabel", {
 				FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.ExtraBold, Enum.FontStyle.Normal),
-				Text = tostring(cost),
+				Text = koCost,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextSize = 14,
 				TextXAlignment = Enum.TextXAlignment.Left,
