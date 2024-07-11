@@ -14,8 +14,9 @@ end
 function CommonToolFunctions.GetCharacterInstances(Player: Player)
 	local Character = Player.Character or Player.CharacterAdded:Wait()
 	local Humanoid: Humanoid = Character:FindFirstChildOfClass("Humanoid")
-	local Animator: Animator = Humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", Humanoid)
-	local RootPart: BasePart = Humanoid.RootPart
+	local Animator: Animator = Humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator")
+	Animator.Parent = Humanoid
+	local RootPart: BasePart? = Humanoid.RootPart
 
 	return Character, Humanoid, RootPart, Animator
 end
@@ -51,8 +52,10 @@ function CommonToolFunctions.LoadModel_Other(Model: Model, Character: Model, Too
 		end
 	end
 
+	local RightArm = Character:WaitForChild("Right Arm")
+
 	if not SheathHandle then
-		CommonToolFunctions.CreateM6D(Character["Right Arm"], MainHandle)
+		CommonToolFunctions.CreateM6D(RightArm, MainHandle)
 	else
 		local Weld = Instance.new("Weld")
 		Weld.Part0 = SheathHandle

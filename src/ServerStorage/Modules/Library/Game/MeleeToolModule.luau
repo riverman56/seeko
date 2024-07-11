@@ -40,13 +40,18 @@ function MeleeToolModule.Load(Tool: Tool)
 
 	local SpamCount = -2
 
+	local AnimationsFolder = Tool:WaitForChild("Animations")
+	local RemotesFolder = Tool:WaitForChild("Remotes")
+	local SFXFolder = Tool:WaitForChild("SFX")
+	local VFXFolder = Tool:WaitForChild("VFX")
+
 	local NewJanitor = Janitor.new()
 	NewJanitor:LinkToInstance(Tool)
 
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
 		Humanoid = Character:WaitForChild("Humanoid")
-		Animator = Humanoid:FindFirstChildOfClass("Animator")
+		Animator = Humanoid:WaitForChild("Animator")
 		RootPart = Character:WaitForChild("HumanoidRootPart")
 		Player = Players:GetPlayerFromCharacter(Character)
 		Animator.Parent = Humanoid
@@ -55,7 +60,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 		if AnimationsLoaded == false then
 			AnimationsLoaded = true
-			Animations = MeleeModule:LoadServerAnimations(Animator, Tool.Animations)
+			Animations = MeleeModule:LoadServerAnimations(Animator, AnimationsFolder)
 		end
 
 		local PotentialGripR = Character["Right Arm"]:FindFirstChild("RightGripAttachment")
@@ -115,7 +120,7 @@ function MeleeToolModule.Load(Tool: Tool)
 		if MeleeModule.CheckEquip(Character, Tool) == false and Animations.Equip then
 			NewJanitor:Add(
 				Animations.Equip:GetMarkerReachedSignal("SwitchHandle"):Once(function(...)
-					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Unsheathe"], 5)
+					CommonFunctions.PlaySound(MainHandle, SFXFolder["SFX_Unsheathe"], 5)
 
 					for _, Object in Weapon_Model:GetDescendants() do
 						if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
@@ -162,7 +167,7 @@ function MeleeToolModule.Load(Tool: Tool)
 		if MeleeModule.CheckEquip(Character, Tool) == true and Animations.Unequip then
 			NewJanitor:Add(
 				Animations.Unequip:GetMarkerReachedSignal("SwitchHandle"):Once(function()
-					CommonFunctions.PlaySound(MainHandle, Tool.SFX["SFX_Sheathe"], 5)
+					CommonFunctions.PlaySound(MainHandle, SFXFolder["SFX_Sheathe"], 5)
 
 					for _, Object in Weapon_Model:GetDescendants() do
 						if not (Object:IsA("Motor6D") or Object:IsA("BasePart")) then
@@ -183,7 +188,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 			NewJanitor:Add(
 				Animations.Unequip:GetMarkerReachedSignal("PlaySound"):Once(function(SoundName: string)
-					CommonFunctions.PlayRandomSound(Tool.SFX, SoundName, MainHandle)
+					CommonFunctions.PlayRandomSound(SFXFolder, SoundName, MainHandle)
 				end),
 				"Disconnect"
 			)
@@ -202,7 +207,7 @@ function MeleeToolModule.Load(Tool: Tool)
 	end)
 
 	NewJanitor:Add(
-		Tool.Remotes.Attack.OnServerEvent:Connect(function(ReceivedPlayer: Player, RequestedAnimation: AnimationTrack)
+		RemotesFolder.Attack.OnServerEvent:Connect(function(ReceivedPlayer: Player, RequestedAnimation: AnimationTrack)
 			if not Player or not Character or not Humanoid or not RootPart or not Equipped then
 				return
 			end
@@ -303,7 +308,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 							task.delay(0.1, function()
 								CommonFunctions.PlayRandomSound(
-									Tool.SFX,
+									SFXFolder,
 									RequestedAnimation:GetAttribute("SFX_Hit"),
 									HitRootPart
 								)
@@ -352,7 +357,7 @@ function MeleeToolModule.Load(Tool: Tool)
 										LimbPart
 									)
 
-									local BloodEffect = Tool.VFX.BloodSpillEffect:Clone()
+									local BloodEffect = VFXFolder.BloodSpillEffect:Clone()
 									BloodEffect.Parent = LimbPart
 									BloodEffect.Emission:SetAttribute("Rate_Burst", 0)
 									BloodEffect.Emission:SetAttribute("Rate", 5)
@@ -398,7 +403,7 @@ function MeleeToolModule.Load(Tool: Tool)
 										HitHumanoid:GetAttribute("Stamina") - Tool:GetAttribute("StaminaDamage")
 									)
 
-									local SparkEffect = Tool.VFX.HitSparkEffect:Clone()
+									local SparkEffect = VFXFolder.HitSparkEffect:Clone()
 
 									local ParticlesAttachment = HitCharacter:FindFirstChild("Particles", true)
 
@@ -418,7 +423,7 @@ function MeleeToolModule.Load(Tool: Tool)
 									end)
 
 									task.delay(0.1, function()
-										CommonFunctions.PlayRandomSound(HitTool.SFX, "SFX_Block", HitRootPart)
+										CommonFunctions.PlayRandomSound(HitSFXFolder, "SFX_Block", HitRootPart)
 									end)
 								else
 									Damage()
@@ -492,7 +497,7 @@ function MeleeToolModule.Load(Tool: Tool)
 							end
 
 							CommonFunctions.PlayRandomSound(
-								Tool.SFX,
+								SFXFolder,
 								RequestedAnimation:GetAttribute("SFX_Hit"),
 								HitRootPart
 							)
@@ -508,7 +513,7 @@ function MeleeToolModule.Load(Tool: Tool)
 								)
 
 								CommonFunctions.PlayRandomSound(
-									Tool.SFX,
+									SFXFolder,
 									RequestedAnimation:GetAttribute("SFX_Hit"),
 									HitRootPart
 								)
@@ -536,7 +541,7 @@ function MeleeToolModule.Load(Tool: Tool)
 		end, "Disconnect")
 	)
 
-	NewJanitor:Add(Tool.Remotes.Guard.OnServerEvent:Connect(function(ReceivedPlayer: Player, Value: boolean)
+	NewJanitor:Add(RemotesFolder.Guard.OnServerEvent:Connect(function(ReceivedPlayer: Player, Value: boolean)
 		if not Player or not Character or not Humanoid or not RootPart or not Equipped then
 			return
 		end
