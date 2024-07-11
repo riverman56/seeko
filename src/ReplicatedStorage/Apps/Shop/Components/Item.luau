@@ -35,10 +35,15 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		BorderSizePixel = 0,
 		AutoButtonColor = false,
+		ClipsDescendants = true,
 		Size = UDim2.new(0, 256, 1, 0),
 		[React.Event.MouseButton1Click] = function()
 			producer.setSelectedItem(if isSelected then nil else id)
 			SetShowCicle(true)
+
+			task.delay(1.1, function() 
+				SetShowCicle(false) 
+			end)
 		end,
 	}, {
 		React.createElement("UICorner"),
