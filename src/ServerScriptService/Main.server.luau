@@ -125,6 +125,8 @@ local function HandleCharacterSpawn(Player: Player)
 
 			TagHumanoid:SetAttribute("MaxStamina", TagHumanoid:GetAttribute("DefMaxStamina"))
 			TagHumanoid:SetAttribute("Stamina", TagHumanoid:GetAttribute("MaxStamina"))
+
+			ReplicatedStorage.Remotes.Effects:FireClient(TagPlayer, "Game", "KillEffect")
 		end
 	end)
 

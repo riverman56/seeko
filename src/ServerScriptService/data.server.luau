@@ -9,7 +9,7 @@ local remotes = require(ReplicatedStorage.Shared.remotes)
 local sharedProducers = require(ReplicatedStorage.Shared.SharedProducers)
 local rootProducer = require(ServerStorage.Data.RootProducer)
 
-local DEFAULT_DATA = { ko = 0 }
+local DEFAULT_DATA = { ko = 0, level = 1 }
 
 local collection = Lapis.createCollection("PlayerData", {
 	defaultData = DEFAULT_DATA,
@@ -51,12 +51,12 @@ local function onPlayerRemoving(player: Player)
 	end
 end
 
-Players.PlayerAdded:Connect(onPlayerAdded)
-Players.PlayerRemoving:Connect(onPlayerRemoving)
-
 for _, player in Players:GetPlayers() do
 	onPlayerAdded(player)
 end
+
+Players.PlayerAdded:Connect(onPlayerAdded)
+Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 -- sync
 local broadcaster = Reflex.createBroadcaster({
