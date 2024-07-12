@@ -16,36 +16,26 @@ local function Circle()
 		}
 	end)
 
-	local Location = UserInputService:GetMouseLocation()
-	local MousePosition =  Vector2.new(Location.X, Location.Y)
-
-	local X, Y = nil
+	local MousePosition = UserInputService:GetMouseLocation()
 
 	React.useEffect(function()
-		if CircleReference.current then
-			local CircleObject = CircleReference.current
-			
-			Location = UserInputService:GetMouseLocation()
-			MousePosition = Vector2.new(Location.X, Location.Y)
-			
-			local ParentPosition = CircleObject.Parent.AbsolutePosition
+		local CircleObject = CircleReference.current
 
-			X = MousePosition.X - ParentPosition.X
-			Y = MousePosition.Y - ParentPosition.Y
-
+		if CircleObject then
 			api.start()
-		else
-			X = 0.5
-			Y = 0.5
-		end
-	end, {})
 
+			local CircleSize = Vector2.new(CircleObject.AbsoluteSize.X, CircleObject.AbsoluteSize.Y)
+			local CirclePosition = UDim2.fromOffset(MousePosition.X - (CircleSize.X / 2), MousePosition.Y - (CircleSize.Y / 2))
+
+			CircleObject.Position = CirclePosition
+		end
+	end, {MousePosition}) 
+	
 	return React.createElement("ImageLabel", {
 		ref = CircleReference,
 		Size = styles.Size,
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://266543268",
-		Position = UDim2.new(0, X, 0, Y),
 		ImageTransparency = styles.ImageTransparency,
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		ZIndex = 10,
