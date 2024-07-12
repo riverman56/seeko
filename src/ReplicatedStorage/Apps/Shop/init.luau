@@ -27,6 +27,7 @@ local app = React.createElement(ReactReflex.ReflexContext.Provider, {
 }, {
 	React.createElement("ScreenGui", {
 		ResetOnSpawn = false,
+		Enabled = true,
 	}, {
 		React.createElement(Base),
 	}),
