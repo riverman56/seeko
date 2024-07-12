@@ -94,3 +94,9 @@ ChangeLighting(Lighting.CurrentAtmosphere.Value)
 Lighting.CurrentAtmosphere:GetPropertyChangedSignal("Value"):Connect(function()
     ChangeLighting(Lighting.CurrentAtmosphere.Value)
 end)
+
+RunService:BindToRenderStep("DayCycle", Enum.RenderPriority.Camera.Value + 10, function() 
+	local Value = (workspace:GetServerTimeNow() / 60) % 24
+
+	Lighting.ClockTime = Value
+end)

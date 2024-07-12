@@ -12,7 +12,7 @@ local CanRun = false
 local Moving = false
 local Running = false
 
-local SpeedBoost = 5
+local SpeedBoost = 6
 
 local RunCycle = Animator:LoadAnimation(ReplicatedStorage.Assets.Animations.RunCycle)
 
@@ -25,7 +25,7 @@ local function RunStart()
     
     if RunCycle then
         RunCycle:Play(0.5)
-        RunCycle:AdjustSpeed(Humanoid.WalkSpeed / 16)
+        RunCycle:AdjustSpeed((Humanoid.WalkSpeed / 16) + 0.25)
     end
 
     Humanoid.WalkSpeed += SpeedBoost
