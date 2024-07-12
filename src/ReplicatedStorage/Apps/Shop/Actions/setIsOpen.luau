@@ -1,6 +1,6 @@
-local function setIsOpen(state, category: string)
+local function setIsOpen(state, isOpen: boolean)
 	local nextState = table.clone(state)
-	nextState.selectedCategory = category
+	nextState.isOpen = isOpen
 
 	return nextState
 end

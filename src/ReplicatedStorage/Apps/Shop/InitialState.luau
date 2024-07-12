@@ -1,5 +1,5 @@
 local InitialState = {
-	isOpen = false,
+	isOpen = true,
 	selectedCategory = "Limited",
 	selectedItem = nil,
 	decks = {

@@ -21,6 +21,10 @@ local function Base()
 		return state.shop.decks
 	end)
 
+	local isOpen = ReactReflex.useSelector(function(state)
+		return state.shop.isOpen
+	end)
+
 	local playerData = ReactReflex.useSelector(function(state)
 		return state.playerData[Players.LocalPlayer.Name]
 	end)
@@ -42,6 +46,7 @@ local function Base()
 		BorderSizePixel = 0,
 		Position = UDim2.fromScale(0.499, 0.499),
 		Size = UDim2.fromOffset(756, 416),
+		Visible = isOpen,
 	}, {
 		React.createElement(Description),
 
@@ -271,13 +276,15 @@ local function Base()
 
 		React.createElement("TextButton", {
 			Text = "",
-			Active = false,
 			BackgroundColor3 = Color3.fromRGB(20, 21, 21),
 			BorderColor3 = Color3.fromRGB(0, 0, 0),
 			BorderSizePixel = 0,
 			Position = UDim2.fromScale(0.978, -0.109),
 			Selectable = false,
 			Size = UDim2.fromOffset(32, 32),
+			[React.Event.MouseButton1Down] = function()
+				producer.setIsOpen(not isOpen)
+			end,
 		}, {
 			React.createElement("UICorner"),
 
