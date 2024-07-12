@@ -7,13 +7,11 @@ for _, App in Apps:GetChildren() do
         continue
     end
 
-    if App:GetAttribute("Enabled") ~= true then
+    if App:GetAttribute("Enabled") == false then
         continue
     end
 
     local LoadedApp = require(App)
 
-    LoadedApp()
-
-    -- task.defer(LoadedApp)
+    task.defer(LoadedApp)
 end

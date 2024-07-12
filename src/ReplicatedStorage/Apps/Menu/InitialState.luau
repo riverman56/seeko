@@ -1,0 +1,3 @@
+local InitialState = {}
+
+return InitialState
