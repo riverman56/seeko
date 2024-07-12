@@ -66,12 +66,15 @@ task.defer(function()
 		return
 	end
 
-	if not Player.PlayerScripts:FindFirstChild("PlayerModule"):FindFirstChild("CameraModule"):FindFirstChild("MouseLockController"):FindFirstChild("BoundKeys") then
+	local PlayerModule = Player.PlayerScripts:FindFirstChild("PlayerModule")
+	local CameraModule = PlayerModule:FindFirstChild("CameraModule")
+	local MouseLockController = CameraModule:FindFirstChild("MouseLockController")
+	local BoundKeys = MouseLockController:FindFirstChild("BoundKeys")
+	local CurrentKeys = "LeftAlt"
+
+	if not BoundKeys then
 		return
 	end
-
-	local BoundKeys = Player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule").CameraModule.MouseLockController:WaitForChild("BoundKeys")
-	local CurrentKeys = "LeftAlt"
 
 	coroutine.wrap(function()
 		RunService:BindToRenderStep("ShiftLock", Enum.RenderPriority.Camera.Value + 10, function()
