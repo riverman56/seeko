@@ -250,7 +250,9 @@ function MeleeToolModule.Load(Tool: Tool)
 	end
 
 	local function UnbindCASActions()
-		ContextActionService:UnbindAllActions()
+		ContextActionService:UnbindAction("Attack")
+		ContextActionService:UnbindAction("Guard")
+		ContextActionService:UnbindAction("Guardbreak")
 	end
 
 	Tool.Equipped:Connect(function()
