@@ -17,6 +17,7 @@ local function Circle()
 	end)
 
 	local MousePosition = UserInputService:GetMouseLocation()
+	local CirclePosition
 
 	React.useEffect(function()
 		local CircleObject = CircleReference.current
@@ -25,12 +26,10 @@ local function Circle()
 			api.start()
 
 			local CircleSize = Vector2.new(CircleObject.AbsoluteSize.X, CircleObject.AbsoluteSize.Y)
-			local CirclePosition = UDim2.fromOffset(MousePosition.X - (CircleSize.X / 2), MousePosition.Y - (CircleSize.Y / 2))
-
-			CircleObject.Position = CirclePosition
+			CirclePosition = UDim2.fromOffset(MousePosition.X - (CircleSize.X / 2), MousePosition.Y - (CircleSize.Y / 2))
 		end
 	end, {MousePosition}) 
-	
+
 	return React.createElement("ImageLabel", {
 		ref = CircleReference,
 		Size = styles.Size,
@@ -38,6 +37,7 @@ local function Circle()
 		Image = "rbxassetid://266543268",
 		ImageTransparency = styles.ImageTransparency,
 		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = CirclePosition,
 		ZIndex = 10,
 	}, {
 		React.createElement("UIAspectRatioConstraint", {

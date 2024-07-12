@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
 
 local Player = Players.LocalPlayer
 
@@ -70,6 +71,188 @@ function MeleeToolModule.Load(Tool: Tool)
 		return ReturnAnimations
 	end
 
+	local function RunAttack()
+		Tool:SetAttribute("Debounce_Attack", true)
+		AttackDebounce = true
+
+		if os.clock() - LastStrike >= 1 then
+			StrikeOrder = 1
+		end
+
+		LastStrike = os.clock()
+
+		local AttackAnimations = GetAnimationsWithName("Attack_")
+
+		for _, AttackAnimation in AttackAnimations do
+			if AttackAnimation.IsPlaying == true then
+				AttackAnimation:Stop(0.2)
+			end
+		end
+
+		local AttackAnimation = AttackAnimations[StrikeOrder]
+
+		if not AttackAnimation then
+			Tool:SetAttribute("Debounce_Attack", false)
+			StrikeOrder = 1
+			return
+		end
+
+		AttackAnimation:Play()
+		AttackAnimation:AdjustSpeed(Tool:GetAttribute("SpeedModifier"))
+
+		if StrikeOrder < #AttackAnimations then
+			StrikeOrder += 1
+		else
+			StrikeOrder = 1
+		end
+
+		AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
+			CommonFunctions.PlayRandomSound(SFXFolder, AttackAnimation.Animation:GetAttribute("SFX_Swing"), RootPart)
+			RemotesFolder.Attack:FireServer(AttackAnimation.Animation)
+
+			for _, Object in Character:GetDescendants() do
+				if Object:IsA("Trail") and Object:GetAttribute("StrikeEnable") ~= nil then
+					Object.Enabled = true
+				end
+			end
+		end)
+
+		AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
+			Tool:SetAttribute("Debounce_Attack", false)
+			AttackDebounce = false
+
+			for _, Object in Character:GetDescendants() do
+				if Object:IsA("Trail") and Object:GetAttribute("StrikeEnable") ~= nil and Object.Enabled == true then
+					Object.Enabled = false
+				end
+			end
+		end)
+	end
+
+	local function RunBlock()
+		if os.clock() - LastGuard < 0.5 then
+			return
+		end
+
+		LastGuard = os.clock()
+
+		RemotesFolder.Guard:FireServer(true)
+
+		Guarding = true
+	end
+
+	local function RunGuardBreak()
+		Tool:SetAttribute("Debounce_Attack", true)
+		Tool:SetAttribute("Debounce_GuardBreak", true)
+		AttackDebounce = true
+		GuardBreakDebounce = true
+
+		local AttackAnimations = GetAnimationsWithName("Attack_")
+
+		for _, AttackAnimation in AttackAnimations do
+			if AttackAnimation.IsPlaying == true then
+				AttackAnimation:Stop(0.2)
+			end
+		end
+
+		local AttackAnimation = Animations.GuardBreak
+		AttackAnimation:Play(0.1)
+		AttackAnimation:AdjustSpeed(Tool:GetAttribute("SpeedModifier"))
+
+		AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
+			CommonFunctions.PlayRandomSound(SFXFolder, AttackAnimation.Animation:GetAttribute("SFX_Swing"), RootPart)
+			RemotesFolder.Attack:FireServer(AttackAnimation.Animation)
+		end)
+
+		AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
+			Tool:SetAttribute("Debounce_Attack", false)
+			AttackDebounce = false
+
+			task.delay(3, function()
+				GuardBreakDebounce = false
+				Tool:SetAttribute("Debounce_GuardBreak", false)
+			end)
+		end)
+	end
+
+	local function RunGuardFalse()
+		if Guarding == true and Equipped == true then
+			RemotesFolder.Guard:FireServer(false)
+			Guarding = false
+		end
+	end
+
+	local function HandleAction(Action: string, InputState: Enum.UserInputState)
+		if
+			Equipped == false
+			or Humanoid.PlatformStand == true
+			or Humanoid.Sit == true
+			or Humanoid:GetState() == Enum.HumanoidStateType.Dead
+			or RootPart.Anchored == true
+		then
+			return
+		end
+
+		if InputState == Enum.UserInputState.Begin then
+			if
+				Action == "Attack"
+				and Humanoid:GetAttribute("Stamina") >= Tool:GetAttribute("StaminaCost")
+				and Tool:GetAttribute("Debounce_Attack") == false
+				and AttackDebounce == false
+				and Humanoid:GetAttribute("Guard") == false
+				and Guarding == false
+				and Humanoid:GetAttribute("Stun") ~= true
+				and Tool:GetAttribute("Stun") ~= true
+			then
+				RunAttack()
+			elseif
+				Action == "Guard"
+				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardStaminaCost")
+				and Tool:GetAttribute("Debounce_Attack") == false
+				and Humanoid:GetAttribute("Guard") == false
+				and AttackDebounce == false
+				and Humanoid:GetAttribute("Stun") ~= true
+				and Tool:GetAttribute("Stun") ~= true
+			then
+				RunBlock()
+			elseif
+				Action == "Guardbreak"
+				and Humanoid:GetAttribute("Stamina") > Tool:GetAttribute("GuardBreakStaminaCost")
+				and Tool:GetAttribute("Debounce_Attack") == false
+				and Tool:GetAttribute("Debounce_GuardBreak") == false
+				and Humanoid:GetAttribute("Guard") == false
+				and AttackDebounce == false
+				and Humanoid:GetAttribute("Stun") ~= true
+				and Tool:GetAttribute("Stun") ~= true
+				and GuardBreakDebounce == false
+			then
+				RunGuardBreak()
+			end
+		elseif InputState == Enum.UserInputState.End then
+			if Guarding == true then
+				RunGuardFalse()
+			end
+		end
+	end
+
+	local function BindCASActions()
+		ContextActionService:BindAction("Attack", HandleAction, true)
+		ContextActionService:SetTitle("Attack", "Attack")
+		ContextActionService:SetPosition("Attack", UDim2.new(0.2, 0, 0, 0))
+
+		ContextActionService:BindAction("Guard", HandleAction, true)
+		ContextActionService:SetTitle("Guard", "Guard")
+		ContextActionService:SetPosition("Guard", UDim2.new(0.45, 0, 0, 0))
+
+		ContextActionService:BindAction("Guardbreak", HandleAction, true)
+		ContextActionService:SetTitle("Guardbreak", "Guardbreak")
+		ContextActionService:SetPosition("Guardbreak", UDim2.new(0.7, 0, 0, 0))
+	end
+
+	local function UnbindCASActions()
+		ContextActionService:UnbindAllActions()
+	end
+
 	Tool.Equipped:Connect(function()
 		Character = Tool:FindFirstAncestorOfClass("Model")
 		Humanoid = Character:FindFirstChildOfClass("Humanoid")
@@ -78,6 +261,8 @@ function MeleeToolModule.Load(Tool: Tool)
 		LastEquip = os.clock()
 
 		NewJanitor:LinkToInstances(Character, Tool)
+
+		BindCASActions()
 
 		if
 			Player.PlayerGui.Crosshair.Frame.Crosshair.Visible == false
@@ -126,6 +311,7 @@ function MeleeToolModule.Load(Tool: Tool)
 		Equipped = false
 
 		Guarding = false
+		UnbindCASActions()
 
 		local OtherTool = Character:FindFirstChildOfClass("Tool")
 
@@ -192,69 +378,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Humanoid:GetAttribute("Stun") ~= true
 				and Tool:GetAttribute("Stun") ~= true
 			then
-				Tool:SetAttribute("Debounce_Attack", true)
-				AttackDebounce = true
-
-				if os.clock() - LastStrike >= 1 then
-					StrikeOrder = 1
-				end
-
-				LastStrike = os.clock()
-
-				local AttackAnimations = GetAnimationsWithName("Attack_")
-
-				for _, AttackAnimation in AttackAnimations do
-					if AttackAnimation.IsPlaying == true then
-						AttackAnimation:Stop(0.2)
-					end
-				end
-
-				local AttackAnimation = AttackAnimations[StrikeOrder]
-
-				if not AttackAnimation then
-					Tool:SetAttribute("Debounce_Attack", false)
-					StrikeOrder = 1
-					return
-				end
-
-				AttackAnimation:Play()
-				AttackAnimation:AdjustSpeed(Tool:GetAttribute("SpeedModifier"))
-
-				if StrikeOrder < #AttackAnimations then
-					StrikeOrder += 1
-				else
-					StrikeOrder = 1
-				end
-
-				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
-					CommonFunctions.PlayRandomSound(
-						SFXFolder,
-						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
-						RootPart
-					)
-					RemotesFolder.Attack:FireServer(AttackAnimation.Animation)
-
-					for _, Object in Character:GetDescendants() do
-						if Object:IsA("Trail") and Object:GetAttribute("StrikeEnable") ~= nil then
-							Object.Enabled = true
-						end
-					end
-				end)
-
-				AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
-					Tool:SetAttribute("Debounce_Attack", false)
-					AttackDebounce = false
-
-					for _, Object in Character:GetDescendants() do
-						if
-							Object:IsA("Trail")
-							and Object:GetAttribute("StrikeEnable") ~= nil
-							and Object.Enabled == true
-						then
-							Object.Enabled = false
-						end
-					end
-				end)
+				RunAttack()
 			end
 
 			if
@@ -270,15 +394,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Humanoid:GetAttribute("Stun") ~= true
 				and Tool:GetAttribute("Stun") ~= true
 			then
-				if os.clock() - LastGuard < 0.5 then
-					return
-				end
-
-				LastGuard = os.clock()
-
-				RemotesFolder.Guard:FireServer(true)
-
-				Guarding = true
+				RunBlock()
 			end
 
 			if
@@ -296,41 +412,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				and Tool:GetAttribute("Stun") ~= true
 				and GuardBreakDebounce == false
 			then
-				Tool:SetAttribute("Debounce_Attack", true)
-				Tool:SetAttribute("Debounce_GuardBreak", true)
-				AttackDebounce = true
-				GuardBreakDebounce = true
-
-				local AttackAnimations = GetAnimationsWithName("Attack_")
-
-				for _, AttackAnimation in AttackAnimations do
-					if AttackAnimation.IsPlaying == true then
-						AttackAnimation:Stop(0.2)
-					end
-				end
-
-				local AttackAnimation = Animations.GuardBreak
-				AttackAnimation:Play(0.1)
-				AttackAnimation:AdjustSpeed(Tool:GetAttribute("SpeedModifier"))
-
-				AttackAnimation:GetMarkerReachedSignal("HitStart"):Once(function()
-					CommonFunctions.PlayRandomSound(
-						SFXFolder,
-						AttackAnimation.Animation:GetAttribute("SFX_Swing"),
-						RootPart
-					)
-					RemotesFolder.Attack:FireServer(AttackAnimation.Animation)
-				end)
-
-				AttackAnimation:GetMarkerReachedSignal("HitStop"):Once(function()
-					Tool:SetAttribute("Debounce_Attack", false)
-					AttackDebounce = false
-
-					task.delay(3, function()
-						GuardBreakDebounce = false
-						Tool:SetAttribute("Debounce_GuardBreak", false)
-					end)
-				end)
+				RunGuardBreak()
 			end
 		end),
 		"Disconnect"
@@ -351,10 +433,7 @@ function MeleeToolModule.Load(Tool: Tool)
 				or Input.KeyCode == PlayerControls["Block"]
 				or Input.KeyCode == Enum.KeyCode.ButtonL2
 			then
-				if Guarding == true and Equipped == true then
-					RemotesFolder.Guard:FireServer(false)
-					Guarding = false
-				end
+				RunGuardFalse()
 			end
 		end),
 		"Disconnect"

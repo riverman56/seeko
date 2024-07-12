@@ -3,6 +3,7 @@ task.wait(1)
 local Players = game:GetService("Players")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local Player = Players.LocalPlayer
@@ -61,6 +62,14 @@ local AmbientSound_Manager = require(ReplicatedStorage:WaitForChild("AmbientSoun
 AmbientSound_Manager.Run()
 
 task.defer(function()
+	if UserInputService.KeyboardEnabled ~= true then
+		return
+	end
+
+	if not Player.PlayerScripts:FindFirstChild("PlayerModule"):FindFirstChild("CameraModule"):FindFirstChild("MouseLockController"):FindFirstChild("BoundKeys") then
+		return
+	end
+
 	local BoundKeys = Player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule").CameraModule.MouseLockController:WaitForChild("BoundKeys")
 	local CurrentKeys = "LeftAlt"
 
