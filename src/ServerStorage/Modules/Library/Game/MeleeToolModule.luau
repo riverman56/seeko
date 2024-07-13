@@ -290,7 +290,7 @@ function MeleeToolModule.Load(Tool: Tool)
 							ReplicatedStorage.Remotes.Effects:FireAllClients(
 								"Game",
 								"DamageIndicator",
-								HitCharacter.Head,
+								HitCharacter:WaitForChild("Head"),
 								Tool:GetAttribute("Damage") or 20
 							)
 							ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
