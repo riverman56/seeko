@@ -125,8 +125,8 @@ local function Base()
 						Selectable = false,
 						Size = UDim2.fromScale(0, 1),
 						[React.Event.Activated] = function()
-							producer.setSelectedItem(nil)
-							producer.setSelectedCategory("Decks")
+							producer.setSelectedShopItem(nil)
+							producer.setSelectedShopCategory("Decks")
 						end,
 					}, {
 						React.createElement("Frame", {
@@ -160,8 +160,8 @@ local function Base()
 						Selectable = false,
 						Size = UDim2.fromScale(0, 1),
 						[React.Event.Activated] = function()
-							producer.setSelectedItem(nil)
-							producer.setSelectedCategory("Limited")
+							producer.setSelectedShopItem(nil)
+							producer.setSelectedShopCategory("Limited")
 						end,
 					}, {
 						React.createElement("Frame", {
@@ -283,7 +283,7 @@ local function Base()
 			Selectable = false,
 			Size = UDim2.fromOffset(32, 32),
 			[React.Event.MouseButton1Down] = function()
-				producer.setIsOpen(not isOpen)
+				producer.setIsShopOpen(not isOpen)
 			end,
 		}, {
 			React.createElement("UICorner"),

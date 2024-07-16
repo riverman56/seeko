@@ -7,7 +7,7 @@ local ReactReflex = require(Packages.ReactReflex)
 local ReactRoblox = require(Packages.ReactRoblox)
 
 local Components = script.Components
-local Base = require(Components.Base)
+local Items = require(Components.Items)
 local Button = require(Components.Button)
 
 local rootProducer = require(ReplicatedStorage.Shared.RootProducer)
@@ -19,8 +19,13 @@ local app = React.createElement(ReactReflex.ReflexContext.Provider, {
 		ResetOnSpawn = false,
 		Enabled = true,
 	}, {
-		React.createElement(Base),
-		React.createElement(Button)
+		React.createElement("UIPadding", {
+			PaddingBottom = UDim.new(0, 14),
+			PaddingLeft = UDim.new(0, 14),
+		}),
+
+		React.createElement(Items),
+		React.createElement(Button),
 	}),
 })
 

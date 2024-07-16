@@ -38,11 +38,11 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 		ClipsDescendants = true,
 		Size = UDim2.new(0, 256, 1, 0),
 		[React.Event.MouseButton1Click] = function()
-			producer.setSelectedItem(if isSelected then nil else id)
+			producer.setSelectedShopItem(if isSelected then nil else id)
 			SetShowCicle(true)
 
-			task.delay(1.1, function() 
-				SetShowCicle(false) 
+			task.delay(1.1, function()
+				SetShowCicle(false)
 			end)
 		end,
 	}, {

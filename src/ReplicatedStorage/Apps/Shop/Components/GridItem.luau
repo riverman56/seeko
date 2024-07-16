@@ -22,7 +22,7 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 		BorderSizePixel = 0,
 		AutoButtonColor = false,
 		[React.Event.MouseButton1Click] = function()
-			producer.setSelectedItem(if isSelected then nil else id)
+			producer.setSelectedShopItem(if isSelected then nil else id)
 		end,
 	}, {
 		React.createElement("UICorner"),
