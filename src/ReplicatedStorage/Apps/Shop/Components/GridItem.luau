@@ -4,9 +4,11 @@ local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 local ReactReflex = require(Packages.ReactReflex)
 
+local ItemViewport = require(script.Parent.Parent.Parent.CommonComponents.ItemViewport)
+
 local formatCurrency = require(ReplicatedStorage.Utilities.formatCurrency)
 
-local function GridItem(name: string, cost: number, id: number, displayModel: Model?)
+local function GridItem(name: string, cost: number, id: number, displayModel: Model)
 	local producer = ReactReflex.useProducer()
 	local selectedItem = ReactReflex.useSelector(function(state)
 		return state.shop.selectedItem
@@ -38,18 +40,10 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 			PaddingTop = UDim.new(0, 8),
 		}),
 
-		React.createElement("ViewportFrame", {
-			Ambient = Color3.fromRGB(252, 249, 231),
-			LightColor = Color3.fromRGB(255, 173, 200),
-			LightDirection = Vector3.new(1, 0.31, -0.3),
-			AnchorPoint = Vector2.new(0.5, 1),
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-			BackgroundTransparency = 1,
-			BorderColor3 = Color3.fromRGB(0, 0, 0),
-			BorderSizePixel = 0,
-			Position = UDim2.fromScale(0.5, 1),
-			Size = UDim2.new(1, 0, 0, 72),
-		}),
+		ItemViewport({
+			Position = UDim2.fromScale(0.5, 0.922),
+			Size = UDim2.new(1, 0, 0.714, 72),
+		}, displayModel),
 
 		React.createElement("Frame", {
 			AnchorPoint = Vector2.new(0.5, 1),

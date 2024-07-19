@@ -11,6 +11,8 @@ local Base = require(Components.Base)
 
 local rootProducer = require(ReplicatedStorage.Shared.RootProducer)
 
+local localPlayer = Players.LocalPlayer
+
 local app = React.createElement(ReactReflex.ReflexContext.Provider, {
 	value = rootProducer,
 }, {
@@ -22,7 +24,16 @@ local app = React.createElement(ReactReflex.ReflexContext.Provider, {
 	}),
 })
 
+local playerData = rootProducer:getState(function(state)
+	return state.playerData[localPlayer.Name]
+end)
+
+if playerData then
+	for _, weapon in playerData.weapons do
+	end
+end
+
 return function()
 	local root = ReactRoblox.createRoot(Instance.new("Folder"))
-	root:render(ReactRoblox.createPortal(app, Players.LocalPlayer.PlayerGui))
+	root:render(ReactRoblox.createPortal(app, localPlayer.PlayerGui))
 end

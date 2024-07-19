@@ -9,13 +9,27 @@ local remotes = require(ReplicatedStorage.Shared.remotes)
 local sharedProducers = require(ReplicatedStorage.Shared.SharedProducers)
 local rootProducer = require(ServerStorage.Data.RootProducer)
 
-local DEFAULT_DATA = { ko = 0, level = 1 }
+local StarterKatana = ServerStorage.Weapons.Katanas.Katana
+local StarterHandCombat = ServerStorage.Weapons.HandCombat.Unarmed
+
+local DEFAULT_DATA = { isNew = true, ko = 0, level = 1, XP = 0, weapons = {} }
 
 local collection = Lapis.createCollection("PlayerData", {
 	defaultData = DEFAULT_DATA,
 })
 
 local documents = {}
+
+local function addWeapons(player: Player, weaponNames: { string })
+	for _, weaponName in weaponNames do
+		local weaponTool = ServerStorage.Weapons:FindFirstChild(weaponName, true)
+		if weaponTool and not player.StarterGear:FindFirstChild(weaponName) then
+			weaponTool:Clone().Parent = player.StarterGear
+		end
+	end
+
+	player:LoadCharacter()
+end
 
 local function onPlayerAdded(player: Player)
 	-- The second argument associates the document with the player's UserId which is useful
@@ -31,7 +45,10 @@ local function onPlayerAdded(player: Player)
 			end
 
 			documents[player] = document
-			rootProducer.setPlayerData(player.Name, document:read())
+			local data = document:read()
+
+			addWeapons(player, data.weapons)
+			rootProducer.setPlayerData(player.Name, data)
 		end)
 		:catch(function(message)
 			warn(`Player {player.Name}'s data failed to load: {message}`)
@@ -45,7 +62,15 @@ local function onPlayerRemoving(player: Player)
 	local document = documents[player]
 
 	-- The document won't be added to the dictionary if PlayerRemoving fires bofore it finishes loading.
-	if document ~= nil then
+	if document then
+		local playerData = rootProducer:getState(function(state)
+			return state.playerData[player.Name]
+		end)
+
+		document:write(playerData)
+
+		rootProducer.setPlayerData(player.Name, nil)
+
 		documents[player] = nil
 		document:close():catch(warn)
 	end
@@ -66,7 +91,7 @@ local broadcaster = Reflex.createBroadcaster({
 	end,
 	beforeDispatch = function(player, action)
 		-- the player only receives their own data and no one else's
-		if action.name == "setPlayerData" and action.arguments[1] ~= player.Name then
+		if action.arguments[1] ~= player.Name then
 			return
 		end
 		return action
@@ -75,6 +100,36 @@ local broadcaster = Reflex.createBroadcaster({
 
 remotes.start:connect(function(player)
 	broadcaster:start(player)
+end)
+
+remotes.selectClass:connect(function(player, class)
+	local isNew = rootProducer:getState(function(state)
+		local playerData = state.playerData[player.Name]
+		print(playerData)
+		if playerData then
+			return playerData.isNew
+		end
+
+		return false
+	end)
+
+	if not isNew then
+		return
+	end
+
+	if class == "Katanas" then
+		rootProducer.addWeapon(player.Name, StarterKatana.Name)
+		addWeapons(player, {
+			StarterKatana.Name,
+		})
+	elseif class == "HandCombat" then
+		rootProducer.addWeapon(player.Name, StarterHandCombat.Name)
+		addWeapons(player, {
+			StarterHandCombat.Name,
+		})
+	end
+
+	rootProducer.setIsNew(player.Name, false)
 end)
 
 rootProducer:applyMiddleware(broadcaster.middleware)

@@ -21,6 +21,10 @@ local function Base()
 		return state.shop.decks
 	end)
 
+	local limitedState = ReactReflex.useSelector(function(state)
+		return state.shop.limited
+	end)
+
 	local isOpen = ReactReflex.useSelector(function(state)
 		return state.shop.isOpen
 	end)
@@ -31,11 +35,19 @@ local function Base()
 
 	local ko = if playerData then formatCurrency(playerData.ko) else "N/A"
 
-	local decks = {}
+	local decksElements = {}
 	for id, deck in decksState do
 		table.insert(
-			decks,
-			Item(deck.name, deck.cost, id, ReplicatedStorage.Assets.Models.Decks:FindFirstChild(deck.name))
+			decksElements,
+			Item(deck.name, deck.cost, id, ReplicatedStorage.Assets.ViewportModels.Decks:FindFirstChild(deck.name))
+		)
+	end
+
+	local limitedElements = {}
+	for id, deck in limitedState do
+		table.insert(
+			limitedElements,
+			GridItem(deck.name, deck.cost, id, ReplicatedStorage.Assets.ViewportModels.Decks:FindFirstChild(deck.name))
 		)
 	end
 
@@ -223,7 +235,7 @@ local function Base()
 				SortOrder = Enum.SortOrder.LayoutOrder,
 			}),
 
-			React.createElement(React.Fragment, nil, decks),
+			React.createElement(React.Fragment, nil, decksElements),
 		}),
 
 		React.createElement("ScrollingFrame", {
@@ -271,6 +283,8 @@ local function Base()
 					CellSize = UDim2.fromOffset(109, 109),
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
+
+				React.createElement(React.Fragment, nil, limitedElements),
 			}),
 		}),
 

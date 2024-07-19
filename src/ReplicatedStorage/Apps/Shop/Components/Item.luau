@@ -4,7 +4,7 @@ local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 local ReactReflex = require(Packages.ReactReflex)
 
-local ViewportCamera = ReplicatedStorage:WaitForChild("ViewportCamera")
+local ItemViewport = require(script.Parent.Parent.Parent.CommonComponents.ItemViewport)
 
 local CircleElement = require(script.Parent.Animations.Circle)
 
@@ -16,15 +16,7 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 		return state.shop.selectedItem
 	end)
 
-	local viewportRef = React.useRef(nil)
-
 	local ShowCircle, SetShowCicle = React.useState(false)
-
-	React.useEffect(function()
-		if not viewportRef.current:FindFirstChildOfClass("Model") then
-			displayModel:Clone().Parent = viewportRef.current
-		end
-	end)
 
 	local isSelected = selectedItem == id
 
@@ -78,20 +70,10 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 			PaddingTop = UDim.new(0, 8),
 		}),
 
-		React.createElement("ViewportFrame", {
-			ref = viewportRef,
-			CurrentCamera = ViewportCamera,
-			Ambient = Color3.fromRGB(252, 249, 231),
-			LightColor = Color3.fromRGB(255, 173, 200),
-			LightDirection = Vector3.new(1, 0.31, -0.3),
-			AnchorPoint = Vector2.new(0.5, 1),
-			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-			BackgroundTransparency = 1,
-			BorderColor3 = Color3.fromRGB(0, 0, 0),
-			BorderSizePixel = 0,
+		ItemViewport({
 			Position = UDim2.fromScale(0.5, 0.922),
 			Size = UDim2.new(1, 0, 0.714, 72),
-		}),
+		}, displayModel),
 
 		React.createElement("Frame", {
 			AnchorPoint = Vector2.new(1, 0),

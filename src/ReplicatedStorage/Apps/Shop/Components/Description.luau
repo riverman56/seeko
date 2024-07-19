@@ -86,13 +86,11 @@ local function Description()
 		}, {
 			React.createElement("TextButton", {
 				Text = "",
-				Active = false,
 				BackgroundColor3 = Color3.fromRGB(33, 93, 14),
 				BorderColor3 = Color3.fromRGB(0, 0, 0),
 				BorderSizePixel = 0,
-				Selectable = false,
-				AutoButtonColor = false,
 				Size = UDim2.fromOffset(144, 36),
+				[React.Event.MouseButton1Click] = function() end,
 			}, {
 				React.createElement("UICorner"),
 
