@@ -5,7 +5,7 @@ local ContextActionService = game:GetService("ContextActionService")
 
 local Player = Players.LocalPlayer
 
-local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
 local MeleeModule = require(script.Parent.MeleeModule_Client)
 local PlayerControls = require(ReplicatedStorage.Modules.Gameplay.PlayerControls)

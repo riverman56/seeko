@@ -22,7 +22,7 @@ local Attributes = {
 local JanitorStorage = {}
 local CharacterJanitorStuff = {}
 
-local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 
 -- Debugging Handle stuff, only for studio
 for _, Object in game:GetDescendants() do

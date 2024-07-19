@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
 local RunService = game:GetService("RunService")
 
-local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local CommonFunctions = require(ReplicatedStorage.Modules.Utility.CommonFunctions)
 local TagModule = require(ReplicatedStorage.Modules.Miscellaneous.TagSystem)
 
@@ -131,7 +131,10 @@ function MeleeToolModule.Load(Tool: Tool)
 							Object.Weld.Part1 = nil
 						end
 
-						if Object.Name == "Weapon_Handle" and Object:IsA("Motor6D") --[[and Object:IsDescendantOf(SheathHandle)]] then
+						if
+							Object.Name == "Weapon_Handle"
+							and Object:IsA("Motor6D") --[[and Object:IsDescendantOf(SheathHandle)]]
+						then
 							Object.Part0 = Character[tostring(...)]
 						end
 					end
@@ -391,7 +394,7 @@ function MeleeToolModule.Load(Tool: Tool)
 
 									local HitAnimator = HitHumanoid:FindFirstChildOfClass("Animator")
 										or Instance.new("Animator")
-										HitAnimator.Parent = HitHumanoid
+									HitAnimator.Parent = HitHumanoid
 
 									if AnimationObject and AnimationObject.AnimationId ~= "" then
 										local EvadeAnimation = HitAnimator:LoadAnimation(AnimationObject)
@@ -481,62 +484,59 @@ function MeleeToolModule.Load(Tool: Tool)
 				NewHitbox.MultiHit = false
 				NewHitbox.Lifetime = 0.1
 
-				NewHitbox.OnHit:Connect(
-					function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart)
-						local Status =
-							CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
+				NewHitbox.OnHit:Connect(function(HitCharacter: Model, HitHumanoid: Humanoid, HitRootPart: BasePart)
+					local Status = CommonFunctions.CheckStatus(Humanoid, HitHumanoid, Tool:GetAttribute("Damage") or 20)
 
-						local function Damage()
+					local function Damage()
+						HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
+						TagModule.Tag(HitCharacter, Character, Tool:GetAttribute("Damage") * 0.3)
+
+						if HitHumanoid.Health - Tool:GetAttribute("Damage") * 0.3 <= 0 then
+							HitHumanoid.Health = 1
+						else
 							HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
-							TagModule.Tag(HitCharacter, Character, Tool:GetAttribute("Damage") * 0.3)
+						end
 
-							if HitHumanoid.Health - Tool:GetAttribute("Damage") * 0.3 <= 0 then
-								HitHumanoid.Health = 1
-							else
-								HitHumanoid:TakeDamage(Tool:GetAttribute("Damage") * 0.3)
-							end
+						CommonFunctions.PlayRandomSound(
+							SFXFolder,
+							RequestedAnimation:GetAttribute("SFX_Hit"),
+							HitRootPart
+						)
+					end
+
+					if Status == "Damaged" then
+						Damage()
+					elseif Status == "Blocked" then
+						if HitHumanoid:GetAttribute("Stamina") >= Tool:GetAttribute("GuardBreakStaminaDrain") then
+							HitHumanoid:SetAttribute(
+								"Stamina",
+								HitHumanoid:GetAttribute("Stamina") - Tool:GetAttribute("GuardBreakStaminaDrain")
+							)
 
 							CommonFunctions.PlayRandomSound(
 								SFXFolder,
 								RequestedAnimation:GetAttribute("SFX_Hit"),
 								HitRootPart
 							)
-						end
 
-						if Status == "Damaged" then
+							CommonFunctions.PlaySound(
+								HitRootPart,
+								ReplicatedStorage.Assets.Library.Sounds.GuardBreak,
+								5
+							)
+
+							local BV = Instance.new("BodyVelocity")
+							BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
+							BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback") * 2
+							BV.Parent = HitRootPart
+							Debris:AddItem(BV, 0.1)
+
+							HitHumanoid:SetAttribute("Guard", false)
+						else
 							Damage()
-						elseif Status == "Blocked" then
-							if HitHumanoid:GetAttribute("Stamina") >= Tool:GetAttribute("GuardBreakStaminaDrain") then
-								HitHumanoid:SetAttribute(
-									"Stamina",
-									HitHumanoid:GetAttribute("Stamina") - Tool:GetAttribute("GuardBreakStaminaDrain")
-								)
-
-								CommonFunctions.PlayRandomSound(
-									SFXFolder,
-									RequestedAnimation:GetAttribute("SFX_Hit"),
-									HitRootPart
-								)
-
-								CommonFunctions.PlaySound(
-									HitRootPart,
-									ReplicatedStorage.Assets.Library.Sounds.GuardBreak,
-									5
-								)
-
-								local BV = Instance.new("BodyVelocity")
-								BV.MaxForce = Vector3.new(math.huge, 0, math.huge)
-								BV.Velocity = Character.Torso.CFrame.LookVector * Tool:GetAttribute("Knockback") * 2
-								BV.Parent = HitRootPart
-								Debris:AddItem(BV, 0.1)
-
-								HitHumanoid:SetAttribute("Guard", false)
-							else
-								Damage()
-							end
 						end
 					end
-				)
+				end)
 			end
 		end, "Disconnect")
 	)

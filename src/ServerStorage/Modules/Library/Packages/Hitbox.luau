@@ -4,8 +4,8 @@ local RunService = game:GetService("RunService")
 
 local Remotes = ReplicatedStorage.Remotes
 
-local FastSignal = require(ReplicatedStorage.Modules.Utility.FastSignal)
-local Janitor = require(ReplicatedStorage.Modules.Utility.Janitor)
+local FastSignal = require(ReplicatedStorage.Packages.FastSignal)
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 
 local Hitbox = {}
 Hitbox.__index = Hitbox
