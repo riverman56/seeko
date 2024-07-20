@@ -15,10 +15,9 @@ local Hitbox = require(script.Parent.Parent.Packages.Hitbox)
 local MeleeToolModule = {}
 
 function MeleeToolModule.Load(Tool: Tool)
-	assert(
-		Tool and typeof(Tool) == "Instance" and Tool:IsA("Tool"),
-		"Unexpected argument #1, expected Instance<Tool>, got " .. typeof(Tool)
-	)
+	if not Tool then
+		return
+	end
 
 	local Character
 	local Humanoid: Humanoid
@@ -292,11 +291,12 @@ function MeleeToolModule.Load(Tool: Tool)
 
 							ReplicatedStorage.Remotes.Effects:FireAllClients(
 								"Game",
-								"DamageIndicator",
+								"DamageEffects",
+								HitCharacter,
 								HitCharacter:WaitForChild("Head"),
 								Tool:GetAttribute("Damage") or 20
 							)
-							ReplicatedStorage.Remotes.Effects:FireAllClients("Game", "DamageHighlight", HitCharacter)
+
 							ReplicatedStorage.Remotes.Effects:FireClient(Player, "Game", "Hitmarker")
 
 							local BV = Instance.new("BodyVelocity")

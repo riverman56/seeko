@@ -13,6 +13,10 @@ local PlayerControls = require(ReplicatedStorage.Modules.Gameplay.PlayerControls
 local MeleeToolModule = {}
 
 function MeleeToolModule.Load(Tool: Tool)
+	if not Tool then
+		return
+	end
+
 	local NewJanitor = Janitor.new()
 
 	local Character

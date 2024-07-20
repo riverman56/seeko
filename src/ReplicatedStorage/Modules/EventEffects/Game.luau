@@ -46,14 +46,25 @@ function Effects.Hitbox(CFrame: CFrame, Size: Vector3)
 	Debris:AddItem(Visual, 0.1)
 end
 
-function Effects.DamageIndicator(Object: BasePart, Damage: number)
-	if Player:DistanceFromCharacter(Object.Position) >= 50 then
+function Effects.DamageEffects(Character : Model, Object : BasePart, Damage : number)
+	if Player:DistanceFromCharacter(Object.Position) >= 50 or Player:DistanceFromCharacter(Character.PrimaryPart.Position) >= 50 then
 		return
 	end
 
 	if Object == nil or Damage == nil then
 		return
 	end
+
+	local NewHighlight = Instance.new("Highlight")
+	NewHighlight.OutlineTransparency = 1
+	NewHighlight.FillTransparency = 0.3
+	NewHighlight.FillColor = Color3.fromRGB(196, 0, 4)
+	NewHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
+	NewHighlight.Parent = Character
+
+	TweenService:Create(NewHighlight, DamageHighlightTween, { FillTransparency = 1 }):Play()
+
+	Debris:AddItem(NewHighlight, DamageHighlightTween.Time + 0.1)
 
 	local IndicatorPart: Part = Library.Parts.Damage:Clone()
 	local Indicator: BillboardGui = IndicatorPart.UI
@@ -75,26 +86,7 @@ function Effects.DamageIndicator(Object: BasePart, Damage: number)
 	Debris:AddItem(IndicatorPart, 1)
 end
 
-function Effects.DamageHighlight(Character: Model)
-	if Player:DistanceFromCharacter(Character.PrimaryPart.Position) >= 50 then
-		return
-	end
-
-	local NewHighlight = Instance.new("Highlight")
-	NewHighlight.OutlineTransparency = 1
-	NewHighlight.FillTransparency = 0.3
-	NewHighlight.FillColor = Color3.fromRGB(196, 0, 4)
-	NewHighlight.DepthMode = Enum.HighlightDepthMode.Occluded
-	NewHighlight.Parent = Character
-
-	TweenService:Create(NewHighlight, DamageHighlightTween, { FillTransparency = 1 }):Play()
-
-	Debris:AddItem(NewHighlight, DamageHighlightTween.Time + 0.1)
-end
-
 function Effects.Hitmarker()
-	print("Hitmarker")
-
 	local Gui = Player.PlayerGui.Crosshair.Frame
 
 	local Crosshair = Gui.Crosshair
