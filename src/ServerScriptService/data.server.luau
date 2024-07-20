@@ -26,6 +26,10 @@ local function addWeapons(player: Player, weaponNames: { string })
 		if weaponTool and not player.StarterGear:FindFirstChild(weaponName) then
 			weaponTool:Clone().Parent = player.StarterGear
 		end
+
+		if weaponTool and not player.Backpack:FindFirstChild(weaponName) then
+			weaponTool:Clone().Parent = player.Backpack
+		end
 	end
 
 	player:LoadCharacter()
@@ -37,15 +41,27 @@ local function onPlayerAdded(player: Player)
 	collection
 		:load(`Player{player.UserId}`, { player.UserId })
 		:andThen(function(document)
-			if player.Parent == nil then
+			if not player:IsDescendantOf(Players) then
 				-- The player might have left before the document finished loading.
-				-- The document needs to be closed because PlayerRemoving won't fire at this point.
+				-- The document needs to be closed because PlayerRemoving won't fire at this point
 				document:close():catch(warn)
 				return
 			end
 
 			documents[player] = document
 			local data = document:read()
+
+			if data == nil then
+				data = DEFAULT_DATA
+
+				local succ, result = pcall(function()
+					return document:write(data)
+				end)
+
+				if not succ then
+					warn(result)
+				end
+			end
 
 			addWeapons(player, data.weapons)
 			rootProducer.setPlayerData(player.Name, data)
