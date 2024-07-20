@@ -16,5 +16,10 @@ return {
 			kind = "toggle",
 			value = false,
 		},
+		{
+			name = "Hitboxes",
+			kind = "toggle",
+			value = false,
+		}
 	},
 }

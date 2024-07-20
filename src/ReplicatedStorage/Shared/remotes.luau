@@ -6,6 +6,7 @@ local remotes = Remo.createRemotes({
 	dispatch = Remo.remote(),
 	start = Remo.remote(),
 	selectClass = Remo.remote(),
+	changeSetting = Remo.remote(),
 })
 
 return remotes

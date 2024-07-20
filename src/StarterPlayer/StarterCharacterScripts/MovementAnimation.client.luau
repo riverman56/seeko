@@ -153,7 +153,7 @@ RunService.RenderStepped:Connect(function()
 		and Humanoid:GetState() ~= Enum.HumanoidStateType.Dead
 	then
 		if Humanoid.CameraOffset ~= Vector3.new(2, 0.4, 0) then
-			TweenService:Create(Humanoid, LockInfo, { CameraOffset = Vector3.new(2, 0.4, 0) }):Play()
+			TweenService:Create(Humanoid, LockInfo, { CameraOffset = Vector3.new(1.75, 0, 0) }):Play()
 		end
 	elseif UserInputService.MouseBehavior == Enum.MouseBehavior.Default or IsFirstPerson(Character.Head) then
 		if Humanoid.CameraOffset ~= Vector3.zero then

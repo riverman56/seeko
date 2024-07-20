@@ -12,7 +12,7 @@ local rootProducer = require(ServerStorage.Data.RootProducer)
 local StarterKatana = ServerStorage.Weapons.Katanas.Katana
 local StarterHandCombat = ServerStorage.Weapons.HandCombat.Unarmed
 
-local DEFAULT_DATA = { isNew = true, ko = 0, level = 1, XP = 0, weapons = {} }
+local DEFAULT_DATA = { isNew = true, ko = 0, level = 1, XP = 0, weapons = {}, settings = {} }
 
 local collection = Lapis.createCollection("PlayerData", {
 	defaultData = DEFAULT_DATA,
@@ -31,8 +31,39 @@ local function addWeapons(player: Player, weaponNames: { string })
 			weaponTool:Clone().Parent = player.Backpack
 		end
 	end
+end
 
-	player:LoadCharacter()
+local function createSettingsInstance(player: Player, existingData)
+	local settings = Instance.new("Configuration")
+	settings.Name = "Settings"
+
+	if existingData.settings and typeof(existingData.settings) == "table" then
+		for key, value in existingData.settings do
+			settings:SetAttribute(key, value)
+		end
+	end
+
+	settings.Parent = player
+end
+
+local function appendValues(existingData)
+	local newData = table.clone(existingData)
+
+	for key, value in DEFAULT_DATA do
+		if newData[key] == nil then
+			print("Added new key", key)
+			newData[key] = value
+		end
+	end
+
+	for key in newData do
+		if DEFAULT_DATA[key] == nil then
+			print("Removed old key", key)
+			newData[key] = nil
+		end
+	end
+
+	return newData
 end
 
 local function onPlayerAdded(player: Player)
@@ -53,17 +84,14 @@ local function onPlayerAdded(player: Player)
 
 			if data == nil then
 				data = DEFAULT_DATA
-
-				local succ, result = pcall(function()
-					return document:write(data)
-				end)
-
-				if not succ then
-					warn(result)
-				end
+			else
+				data = appendValues(data)
 			end
 
+			print("data", data)
+
 			addWeapons(player, data.weapons)
+			createSettingsInstance(player, data)
 			rootProducer.setPlayerData(player.Name, data)
 		end)
 		:catch(function(message)
