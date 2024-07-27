@@ -20,9 +20,13 @@ local function Items()
 	for _, menuItem in menuItems do
 		table.insert(
 			menuElements,
-			MenuItem(menuItem.name, menuItem.keybind, function()
-				menuItem.callback(producer)
-			end)
+			React.createElement(MenuItem, {
+				name = menuItem.name,
+				keybind = menuItem.keybind,
+				callback = function()
+					menuItem.callback(producer)
+				end,
+			})
 		)
 	end
 

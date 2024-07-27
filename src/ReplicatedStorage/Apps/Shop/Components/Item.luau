@@ -10,7 +10,7 @@ local CircleElement = require(script.Parent.Animations.Circle)
 
 local formatCurrency = require(ReplicatedStorage.Utilities.formatCurrency)
 
-local function Item(name: string, cost: number, id: number, displayModel: Model)
+local function Item(props: { name: string, cost: number, id: number, displayModel: Model })
 	local producer = ReactReflex.useProducer()
 	local selectedItem = ReactReflex.useSelector(function(state)
 		return state.shop.selectedItem
@@ -18,9 +18,9 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 
 	local ShowCircle, SetShowCicle = React.useState(false)
 
-	local isSelected = selectedItem == id
+	local isSelected = selectedItem == props.id
 
-	local koCost = formatCurrency(cost) or "N/A"
+	local koCost = formatCurrency(props.cost) or "N/A"
 
 	return React.createElement("ImageButton", {
 		BackgroundColor3 = if isSelected then Color3.fromRGB(18, 18, 18) else Color3.fromRGB(31, 31, 31),
@@ -30,7 +30,7 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 		ClipsDescendants = true,
 		Size = UDim2.new(0, 256, 1, 0),
 		[React.Event.MouseButton1Click] = function()
-			producer.setSelectedShopItem(if isSelected then nil else id)
+			producer.setSelectedShopItem(if isSelected then nil else props.id)
 			SetShowCicle(true)
 
 			task.delay(1.1, function()
@@ -48,7 +48,7 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 
 		React.createElement("TextLabel", {
 			FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
-			Text = name,
+			Text = props.name,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 30,
 			TextWrapped = true,
@@ -70,10 +70,13 @@ local function Item(name: string, cost: number, id: number, displayModel: Model)
 			PaddingTop = UDim.new(0, 8),
 		}),
 
-		ItemViewport({
-			Position = UDim2.fromScale(0.5, 0.922),
-			Size = UDim2.new(1, 0, 0.714, 72),
-		}, displayModel),
+		React.createElement(ItemViewport, {
+			viewportProps = {
+				Position = UDim2.fromScale(0.5, 0.922),
+				Size = UDim2.new(1, 0, 0.714, 72),
+			},
+			model = props.displayModel,
+		}),
 
 		React.createElement("Frame", {
 			AnchorPoint = Vector2.new(1, 0),

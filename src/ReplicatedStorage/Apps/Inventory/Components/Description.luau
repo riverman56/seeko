@@ -1,11 +1,16 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
+local ReactReflex = require(ReplicatedStorage.Packages.ReactReflex)
 local React = require(Packages.React)
 
 local ItemViewport = require(script.Parent.Parent.Parent.CommonComponents.ItemViewport)
 
 local function Description()
+	local selectedItem = ReactReflex.useSelector(function(state)
+		return state.inventory.selectedItem
+	end)
+
 	return React.createElement("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = Color3.fromRGB(20, 21, 21),
@@ -13,6 +18,7 @@ local function Description()
 		BorderSizePixel = 0,
 		Position = UDim2.fromScale(1.24, 0.499),
 		Size = UDim2.fromOffset(291, 416),
+		Visible = selectedItem ~= nil,
 	}, {
 		React.createElement("UICorner"),
 
@@ -30,7 +36,7 @@ local function Description()
 				BorderSizePixel = 0,
 				FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.ExtraBold, Enum.FontStyle.Normal),
 				Size = UDim2.fromScale(1, 1),
-				Text = "Item",
+				Text = if selectedItem then selectedItem else "Item",
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextSize = 36,
 			}),
@@ -119,10 +125,15 @@ local function Description()
 			}),
 		}),
 
-		ItemViewport({
-			Position = UDim2.fromScale(0.5, 0.476),
-			Size = UDim2.new(1, 0, 0.192, 72),
-		}, displayModel),
+		if selectedItem
+			then React.createElement(ItemViewport, {
+				viewportProps = {
+					Position = UDim2.fromScale(0.5, 0.476),
+					Size = UDim2.new(1, 0, 0.192, 72),
+				},
+				model = ReplicatedStorage.Assets.ViewportModels:FindFirstChild(selectedItem, true),
+			})
+			else nil,
 	})
 end
 

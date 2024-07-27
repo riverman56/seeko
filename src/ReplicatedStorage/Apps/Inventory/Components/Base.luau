@@ -1,11 +1,38 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
+local ReactReflex = require(Packages.ReactReflex)
 
 local Description = require(script.Parent.Description)
+local Item = require(script.Parent.Item)
 
 local function Base()
+	local producer = ReactReflex.useProducer()
+
+	local isOpen = ReactReflex.useSelector(function(state)
+		return state.inventory.isOpen
+	end)
+
+	local playerData = ReactReflex.useSelector(function(state)
+		return state.playerData[Players.LocalPlayer.Name]
+	end)
+
+	local weaponElements = {}
+	if playerData then
+		for _, weaponName in playerData.weapons do
+			local viewportModel = ReplicatedStorage.Assets.ViewportModels:FindFirstChild(weaponName, true)
+			table.insert(
+				weaponElements,
+				React.createElement(Item, {
+					name = weaponName,
+					displayModel = viewportModel,
+				})
+			)
+		end
+	end
+
 	return React.createElement("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = Color3.fromRGB(20, 21, 21),
@@ -13,6 +40,7 @@ local function Base()
 		BorderSizePixel = 0,
 		Position = UDim2.fromScale(0.499, 0.499),
 		Size = UDim2.fromOffset(756, 416),
+		Visible = isOpen,
 	}, {
 		React.createElement(Description),
 
@@ -164,6 +192,8 @@ local function Base()
 			Selectable = false,
 			Size = UDim2.new(1, 0, 1, -28),
 		}, {
+			React.createElement(React.Fragment, nil, weaponElements),
+
 			React.createElement("UIGridLayout", {
 				CellPadding = UDim2.fromOffset(12, 12),
 				CellSize = UDim2.fromOffset(106, 106),
@@ -179,14 +209,15 @@ local function Base()
 		}),
 
 		React.createElement("TextButton", {
-			Active = false,
 			BackgroundColor3 = Color3.fromRGB(20, 21, 21),
 			BorderColor3 = Color3.fromRGB(0, 0, 0),
 			BorderSizePixel = 0,
 			Position = UDim2.fromScale(0.978, -0.109),
-			Selectable = false,
 			Size = UDim2.fromOffset(32, 32),
 			Text = "",
+			[React.Event.MouseButton1Click] = function()
+				producer.setIsInventoryOpen(not isOpen)
+			end,
 		}, {
 			React.createElement("UICorner"),
 

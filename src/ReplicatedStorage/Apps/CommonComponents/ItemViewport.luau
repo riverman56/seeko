@@ -6,12 +6,13 @@ local React = require(Packages.React)
 
 local ViewportCamera = ReplicatedStorage:WaitForChild("ViewportCamera")
 
-local function ItemViewport(props: {}, model: Model)
+local function ItemViewport(props: { viewportProps: {}, model: Model })
+	print(props)
 	local viewportRef = React.useRef(nil)
 
 	React.useEffect(function()
 		if not viewportRef.current:FindFirstChildOfClass("Model") then
-			model:Clone().Parent = viewportRef.current
+			props.model:Clone().Parent = viewportRef.current
 		end
 	end)
 
@@ -28,7 +29,7 @@ local function ItemViewport(props: {}, model: Model)
 			BackgroundTransparency = 1,
 			BorderColor3 = Color3.fromRGB(0, 0, 0),
 			BorderSizePixel = 0,
-		}, props)
+		}, props.viewportProps)
 	)
 end
 

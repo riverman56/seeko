@@ -4,7 +4,7 @@ local Packages = ReplicatedStorage.Packages
 local ReactReflex = require(ReplicatedStorage.Packages.ReactReflex)
 local React = require(Packages.React)
 
-local function Setting(name: string, value: boolean)
+local function Setting(props: { name: string, value: boolean })
 	local producer = ReactReflex.useProducer()
 
 	return React.createElement("Frame", {
@@ -29,7 +29,7 @@ local function Setting(name: string, value: boolean)
 			FontFace = Font.new("rbxassetid://16658237174"),
 			Position = UDim2.fromScale(0, 0.5),
 			Size = UDim2.fromOffset(0, 14),
-			Text = name,
+			Text = props.name,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 18,
 			TextWrapped = true,
@@ -48,7 +48,7 @@ local function Setting(name: string, value: boolean)
 			Position = UDim2.fromScale(1, 0.5),
 			Size = UDim2.fromOffset(49, 18),
 			[React.Event.MouseButton1Click] = function()
-				producer.setSetting(name, not value)
+				producer.setSetting(props.name, not props.value)
 			end,
 		}, {
 			React.createElement("UICorner", {
@@ -56,11 +56,11 @@ local function Setting(name: string, value: boolean)
 			}),
 
 			React.createElement("Frame", {
-				AnchorPoint = Vector2.new(if value then 1 else 0, 0.5),
-				BackgroundColor3 = if value then Color3.fromRGB(97, 255, 93) else Color3.fromRGB(255, 67, 77),
+				AnchorPoint = Vector2.new(if props.value then 1 else 0, 0.5),
+				BackgroundColor3 = if props.value then Color3.fromRGB(97, 255, 93) else Color3.fromRGB(255, 67, 77),
 				BorderColor3 = Color3.fromRGB(0, 0, 0),
 				BorderSizePixel = 0,
-				Position = UDim2.fromScale(if value then 1 else 0, 0.5),
+				Position = UDim2.fromScale(if props.value then 1 else 0, 0.5),
 				Size = UDim2.fromOffset(12, 12),
 			}, {
 				React.createElement("UICorner", {

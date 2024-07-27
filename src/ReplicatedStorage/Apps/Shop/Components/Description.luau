@@ -4,9 +4,9 @@ local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 local ReactReflex = require(Packages.ReactReflex)
 
-local function Description()
-	local producer = ReactReflex.useProducer()
+local ItemViewport = require(script.Parent.Parent.Parent.CommonComponents.ItemViewport)
 
+local function Description()
 	local selectedItem = ReactReflex.useSelector(function(state)
 		return state.shop.selectedItem
 	end)
@@ -128,9 +128,17 @@ local function Description()
 			BackgroundTransparency = 1,
 			BorderColor3 = Color3.fromRGB(0, 0, 0),
 			BorderSizePixel = 0,
-			Position = UDim2.fromScale(0.5, 0.476),
-			Size = UDim2.new(1, 0, 0.192, 72),
 		}),
+
+		if selectedItem
+			then React.createElement(ItemViewport, {
+				viewportProps = {
+					Position = UDim2.fromScale(0.5, 0.476),
+					Size = UDim2.new(1, 0, 0.192, 72),
+				},
+				model = ReplicatedStorage.Assets.ViewportModels:FindFirstChild(decksState[selectedItem].name, true),
+			})
+			else nil,
 
 		React.createElement("Frame", {
 			AnchorPoint = Vector2.new(0.5, 0),

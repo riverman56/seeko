@@ -2,23 +2,33 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
+local ReactReflex = require(Packages.ReactReflex)
 
 local ItemViewport = require(script.Parent.Parent.Parent.CommonComponents.ItemViewport)
 
-local function Item(name: string, displayModel: Model)
+local function Item(props: { name: string, displayModel: Model })
+	local producer = ReactReflex.useProducer()
+
+	local selectedItem = ReactReflex.useSelector(function(state)
+		return state.inventory.selectedItem
+	end)
+
+	local isSelected = selectedItem == props.name
+
 	return React.createElement("ImageButton", {
-		Active = false,
 		BackgroundColor3 = Color3.fromRGB(31, 31, 31),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		BorderSizePixel = 0,
 		Position = UDim2.fromScale(-0.148, -0.00143),
-		Selectable = false,
 		Size = UDim2.new(0.273, 256, 1, 0),
+		[React.Event.MouseButton1Click] = function()
+			producer.setSelectedInventoryItem(if isSelected then nil else props.name)
+		end,
 	}, {
 		React.createElement("UICorner"),
 
 		React.createElement("UIStroke", {
-			Color = Color3.fromRGB(74, 75, 75),
+			Color = if isSelected then Color3.fromRGB(159, 159, 159) else Color3.fromRGB(74, 75, 75),
 		}),
 
 		React.createElement("UIPadding", {
@@ -60,17 +70,20 @@ local function Item(name: string, displayModel: Model)
 			FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
 			Position = UDim2.fromScale(0.5, 1),
 			Size = UDim2.fromScale(1, 0),
-			Text = name,
+			Text = props.name,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 18,
 			TextWrapped = true,
 			ZIndex = 3,
 		}),
 
-		ItemViewport({
-			Position = UDim2.fromScale(0.5, 1),
-			Size = UDim2.new(1, 0, 0, 72),
-		}, displayModel),
+		React.createElement(ItemViewport, {
+			viewportProps = {
+				Position = UDim2.fromScale(0.5, 1),
+				Size = UDim2.new(1, 0, 0, 72),
+			},
+			model = props.displayModel,
+		}),
 	})
 end
 

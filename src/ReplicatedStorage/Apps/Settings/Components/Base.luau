@@ -15,7 +15,13 @@ local function Base()
 	local isOpen = settings.isOpen
 	local settingsElements = {}
 	for _, setting in settings.settings do
-		table.insert(settingsElements, Setting(setting.name, setting.value))
+		table.insert(
+			settingsElements,
+			React.createElement(Setting, {
+				name = setting.name,
+				value = setting.value,
+			})
+		)
 	end
 
 	return React.createElement("Frame", {

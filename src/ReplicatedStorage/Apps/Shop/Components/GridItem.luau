@@ -8,15 +8,15 @@ local ItemViewport = require(script.Parent.Parent.Parent.CommonComponents.ItemVi
 
 local formatCurrency = require(ReplicatedStorage.Utilities.formatCurrency)
 
-local function GridItem(name: string, cost: number, id: number, displayModel: Model)
+local function GridItem(props: { name: string, cost: number, id: number, displayModel: Model })
 	local producer = ReactReflex.useProducer()
 	local selectedItem = ReactReflex.useSelector(function(state)
 		return state.shop.selectedItem
 	end)
 
-	local isSelected = selectedItem == id
+	local isSelected = selectedItem == props.id
 
-	local koCost = formatCurrency(cost) or "N/A"
+	local koCost = formatCurrency(props.cost) or "N/A"
 
 	return React.createElement("ImageButton", {
 		BackgroundColor3 = if isSelected then Color3.fromRGB(18, 18, 18) else Color3.fromRGB(31, 31, 31),
@@ -24,7 +24,7 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 		BorderSizePixel = 0,
 		AutoButtonColor = false,
 		[React.Event.MouseButton1Click] = function()
-			producer.setSelectedShopItem(if isSelected then nil else id)
+			producer.setSelectedShopItem(if isSelected then nil else props.id)
 		end,
 	}, {
 		React.createElement("UICorner"),
@@ -40,10 +40,13 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 			PaddingTop = UDim.new(0, 8),
 		}),
 
-		ItemViewport({
-			Position = UDim2.fromScale(0.5, 0.922),
-			Size = UDim2.new(1, 0, 0.714, 72),
-		}, displayModel),
+		React.createElement(ItemViewport, {
+			viewportProps = {
+				Position = UDim2.fromScale(0.5, 0.922),
+				Size = UDim2.new(1, 0, 0.714, 72),
+			},
+			model = props.displayModel,
+		}),
 
 		React.createElement("Frame", {
 			AnchorPoint = Vector2.new(0.5, 1),
@@ -66,7 +69,7 @@ local function GridItem(name: string, cost: number, id: number, displayModel: Mo
 
 		React.createElement("TextLabel", {
 			FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
-			Text = name,
+			Text = props.name,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 18,
 			TextWrapped = true,

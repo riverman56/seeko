@@ -24,15 +24,6 @@ local app = React.createElement(ReactReflex.ReflexContext.Provider, {
 	}),
 })
 
-local playerData = rootProducer:getState(function(state)
-	return state.playerData[localPlayer.Name]
-end)
-
-if playerData then
-	for _, weapon in playerData.weapons do
-	end
-end
-
 return function()
 	local root = ReactRoblox.createRoot(Instance.new("Folder"))
 	root:render(ReactRoblox.createPortal(app, localPlayer.PlayerGui))

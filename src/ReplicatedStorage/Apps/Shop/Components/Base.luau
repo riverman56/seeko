@@ -39,7 +39,12 @@ local function Base()
 	for id, deck in decksState do
 		table.insert(
 			decksElements,
-			Item(deck.name, deck.cost, id, ReplicatedStorage.Assets.ViewportModels.Decks:FindFirstChild(deck.name))
+			React.createElement(Item, {
+				name = deck.name,
+				cost = deck.cost,
+				id = id,
+				displayModel = ReplicatedStorage.Assets.ViewportModels.Decks:FindFirstChild(deck.name),
+			})
 		)
 	end
 
@@ -47,7 +52,12 @@ local function Base()
 	for id, deck in limitedState do
 		table.insert(
 			limitedElements,
-			GridItem(deck.name, deck.cost, id, ReplicatedStorage.Assets.ViewportModels.Decks:FindFirstChild(deck.name))
+			React.createElement(GridItem, {
+				name = deck.name,
+				cost = deck.cost,
+				id = id,
+				displayModel = ReplicatedStorage.Assets.ViewportModels.Decks:FindFirstChild(deck.name),
+			})
 		)
 	end
 

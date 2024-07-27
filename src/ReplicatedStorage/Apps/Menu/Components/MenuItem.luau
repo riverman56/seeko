@@ -3,13 +3,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
 local React = require(Packages.React)
 
-local function MenuItem(name: string, keybind: Enum.KeyCode, callback: () -> ())
+local function MenuItem(props: { name: string, keybind: Enum.KeyCode, callback: () -> () })
 	return React.createElement("ImageButton", {
 		AnchorPoint = Vector2.new(0, 1),
 		BackgroundColor3 = Color3.fromRGB(20, 21, 21),
 		Position = UDim2.new(0, 18, 0.879, -18),
 		Size = UDim2.fromOffset(217, 36),
-		[React.Event.MouseButton1Click] = callback,
+		[React.Event.MouseButton1Click] = props.callback,
 	}, {
 		React.createElement("UICorner"),
 
@@ -46,7 +46,7 @@ local function MenuItem(name: string, keybind: Enum.KeyCode, callback: () -> ())
 				FontFace = Font.fromEnum(Enum.Font.BuilderSansBold),
 				Position = UDim2.fromScale(0.5, 0.1),
 				Size = UDim2.fromScale(0.75, 0.7),
-				Text = keybind.Name,
+				Text = props.keybind.Name,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextScaled = true,
 				TextSize = 20,
@@ -69,7 +69,7 @@ local function MenuItem(name: string, keybind: Enum.KeyCode, callback: () -> ())
 			FontFace = Font.new("rbxassetid://16658237174", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
 			Position = UDim2.fromScale(0, 0.5),
 			Size = UDim2.fromScale(0, 1),
-			Text = name,
+			Text = props.name,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextSize = 20,
 		}),
